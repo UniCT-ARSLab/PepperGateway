@@ -107,6 +107,8 @@ To get a local copy up and running follow these simple example steps.
 
 ### Prerequisites
 
+First you need to download a Python SDK for Pepper, [PyNaoqi](http://doc.aldebaran.com/2-5/dev/python/install_guide.html).
+
 This is an example of how to list things you need to use the software and how to install them.
   ```sh
   make build
