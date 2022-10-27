@@ -89,22 +89,6 @@ class Pepper:
 
         print("[INFO]: Robot is initialized at " + ip_address + ":" + str(port))
 
-    def set_language(self, language):
-        self.speech_service.pause(True)
-        self.speech_service.setLanguage(language)
-        self.dialog_service.setLanguage(language)
-        self.speech_service.pause(False)
-
-    def stand(self):
-        """Get robot into default standing position known as `StandInit` or `Stand`"""
-        self.posture_service.goToPosture("Stand", 0.5)
-        print("[INFO]: Robot is in default position")
-
-    def rest(self):
-        """Get robot into default resting position know as `Crouch`"""
-        self.posture_service.goToPosture("Crouch", 0.5)
-        print("[INFO]: Robot is in resting position")
-
     def point_at(self, x, y, z, effector_name, frame):
         """
         Point end-effector in cartesian space
@@ -158,59 +142,6 @@ class Pepper:
         """
         self.tts_service.say(text)
         print("[INFO]: Robot says: " + text)
-
-    def tablet_show_web(self, url):
-        """
-        Display a web page on robot's tablet. It also works for
-        sharing a locally stored images and websites by running:
-
-        >>> pepper.share_localhost("/Users/user/Desktop/web_host/")
-        >>> pepper.tablet_show_web("<remote_ip>:8000/web_host/index.html")
-
-        Or
-
-        >>> pepper.tablet_show_web("https://www.ciirc.cvut.cz")
-
-        .. note:: Or you can simply run `python -m SimpleHTTPServer` in the root of \
-        the web host and host it by self on specified port. Default is 8000.
-
-        :param url: Web URL
-        :type  url: string
-        """
-        self.tablet_service.showWebview(url)
-
-    def clean_tablet(self):
-        """Clean tablet and show default tablet animation on robot"""
-        self.tablet_service.hideWebview()
-
-    def tablet_show_image(self, image_url):
-        """
-        Display image on robot tablet
-
-        .. seealso:: For more take a look at `tablet_show_web()`
-
-        :Example:
-
-        >>> pepper.tablet_show_image("https://goo.gl/4Xq6Bc")
-
-        :param image_url: Image URL (local or web)
-        :type image_url: string
-        """
-        self.tablet_service.showImage(image_url)
-
-    def tablet_show_settings(self):
-        """Show robot settings on the tablet"""
-        self.tablet_service.showWebview("http://198.18.0.1/")
-
-    def restart_robot(self):
-        """Restart robot (it takes several minutes)"""
-        print("[WARN]: Restarting the robot")
-        self.system_service.reboot()
-
-    def shutdown_robot(self):
-        """Turn off the robot completely"""
-        print("[WARN]: Turning off the robot")
-        self.system_service.shutdown()
 
     def autonomous_life_off(self):
         """
@@ -584,10 +515,6 @@ class Pepper:
         """Look up"""
         self.motion_service.setAngles("HeadPitch", -0.4, 0.2)
 
-    def move_head_default(self):
-        """Put head into default position in 'StandInit' pose"""
-        self.motion_service.setAngles("HeadPitch", 0.0, 0.2)
-
     def move_to_circle(self, clockwise, t=10):
         """
         Move a robot into circle for specified time
@@ -607,20 +534,6 @@ class Pepper:
             self.motion_service.moveToward(0.5, 0.0, -0.6)
         time.sleep(t)
         self.motion_service.stopMove()
-
-    def blink_eyes(self, rgb):
-        """
-        Blink eyes with defined color
-
-        :param rgb: Color in RGB space
-        :type rgb: integer
-
-        :Example:
-
-        >>> pepper.blink_eyes([255, 0, 0])
-
-        """
-        self.led_service.fadeRGB('AllLeds', rgb[0], rgb[1], rgb[2], 1.0)
 
     def turn_off_leds(self):
         """Turn off the LEDs in robot's eyes"""
@@ -783,12 +696,6 @@ class Pepper:
         except Exception as error:
             print(error)
             return False
-
-    def start_dance(self):
-        """
-        Start a robotic dance
-        """
-        dance.dance(self.motion_service)
 
     def start_behavior(self, behavior):
         """
@@ -1050,25 +957,6 @@ class Pepper:
         else:
             print("[INFO]: Cannot move a hand")
 
-    # def chatbot(self):
-    #     """
-    #     Run chatbot with text to speech and speech to text
-
-    #     ..warning:: This is not currently working
-    #     """
-    #     tools.chatbot_init()
-    #     while True:
-    #         try:
-    #             self.set_awareness(False)
-    #             question = self.listen()
-    #             print("[USER]: " + question)
-    #             answer = tools.chatbot_ask(question)
-    #             print("[ROBOT]: "+ answer)
-    #             self.say(answer)
-    #         except KeyboardInterrupt:
-    #             self.set_awareness(True)
-
-
 class VirtualPepper:
     """Virtual robot for testing"""
 
@@ -1098,34 +986,3 @@ class VirtualPepper:
             speech = recognizer.recognize_google(audio, language="it-IT")
 
             return speech
-
-    @staticmethod
-    def stream_camera():
-        """Stream web camera of the computer (if any)"""
-        print("[INFO]: Press q to quit camera stream")
-
-        cap = cv2.VideoCapture(0)
-
-        while True:
-            ret, frame = cap.read()
-            cv2.imshow("frame", frame)
-            if cv2.waitKey(1) & 0xFF == ord("q"):
-                break
-
-        cap.release()
-        cv2.destroyAllWindows()
-
-    @staticmethod
-    def camera_image():
-        """Show one frame from web camera (if any)"""
-        cap = cv2.VideoCapture(0)
-        while True:
-            ret, img = cap.read()
-            cv2.imshow("input", img)
-
-            key = cv2.waitKey(10)
-            if key == 27:
-                break
-
-        cv2.destroyAllWindows()
-        cv2.VideoCapture(0).release()
