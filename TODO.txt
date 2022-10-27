@@ -1,0 +1,1 @@
+Setup directory with existing code. Setup Dockerfile, Makefile and few working methods in a separate file. Import Gateway.
