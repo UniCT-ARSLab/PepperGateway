@@ -16,11 +16,11 @@ import speech_recognition
 import gtts
 import playsound
 import subprocess
-import dance
+# import dance
 import socket
 import paramiko
 from scp import SCPClient
-import tools
+# import tools
 
 
 class Pepper:
@@ -83,7 +83,7 @@ class Pepper:
         self.camera_link = None
 
         self.recognizer = speech_recognition.Recognizer()
-        self.set_language("Italian")
+        # self.set_language("Italian") To fix!!!
 
         #self.autonomous_life_on()
 
@@ -242,7 +242,7 @@ class Pepper:
 
         self.slam_map = img
 
-    def show_map(self, on_robot=False, remote_ip=None):
+    def show_map(self, index, on_robot=False, remote_ip=None):
         """
         Shows a map from robot based on previously loaded one
         or explicit exploration of the scene. It can be viewed on
@@ -287,7 +287,8 @@ class Pepper:
             self.tablet_show_web(remote_ip + ":8000/map.png")
             print("[INFO]: Map is available at: " + str(remote_ip) + ":8000/map.png")
         else:
-            cv2.imwrite("map.png", robot_map)
+            map_name = "map-" + str(index) + ".png"
+            cv2.imwrite(map_name, robot_map)
             #cv2.imshow("RobotMap", robot_map)
             #cv2.waitKey(0)
             #cv2.destroyAllWindows()
