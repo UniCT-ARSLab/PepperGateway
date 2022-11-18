@@ -1,13 +1,3 @@
-"""
-This is a wrapper around `qi` framework by Aldebaran
-to control Pepper the humanoid robot with Python 2.7.
-
-Package uses high-level commands to move robot, take
-camera input or run Google Recognition API to get speech
-recognition.
-
-It also includes a virtual robot for testing purposes.
-"""
 import qi
 import time
 import numpy
@@ -20,8 +10,6 @@ import subprocess
 import socket
 import paramiko
 from scp import SCPClient
-# import tools
-
 
 class Pepper:
     """
@@ -208,43 +196,6 @@ class Pepper:
         self.unsubscribe_effector()
         self.say("Let's do something else!")
 
-    def exploration_mode(self, radius):
-        """
-        Start exploration mode when robot it performing a SLAM
-        in specified radius. Then it saves a map into robot into
-        its default folder.
-
-        .. seealso:: When robot would not move maybe it only needs \
-        to set smaller safety margins. Take a look and `set_security_distance()`
-
-        .. note:: Default folder for saving maps on the robot is: \
-        `/home/nao/.local/share/Explorer/`
-
-        :param radius: Distance in meters
-        :type radius: integer
-        :return: image
-        :rtype: cv2 image
-        """
-        self.say("Starting exploration in " + str(radius) + " meters")
-        self.navigation_service.explore(radius)
-        map_file = self.navigation_service.saveExploration()
-
-        print("[INFO]: Map file stored: " + map_file)
-
-        self.navigation_service.startLocalization()
-        self.navigation_service.navigateToInMap([0., 0., 0.])
-        self.navigation_service.stopLocalization()
-
-        # Retrieve and display the map built by the robot
-        result_map = self.navigation_service.getMetricalMap()
-        map_width = result_map[1]
-        map_height = result_map[2]
-        img = numpy.array(result_map[4]).reshape(map_width, map_height)
-        img = (100 - img) * 2.55  # from 0..100 to 255..0
-        img = numpy.array(img, numpy.uint8)
-
-        self.slam_map = img
-
     def show_map(self, on_robot=False, remote_ip=None):
         """
         Shows a map from robot based on previously loaded one
@@ -296,29 +247,40 @@ class Pepper:
             cv2.waitKey(0)
             cv2.destroyAllWindows()
 
-# ------------------------------------------------------------------
-
-    def _robot_localization(self, point_of_interest):
+    def setup_point(self, name):
         """
-        Localize a robot in a map
+        Setup point of interest in a map.
+        Any saved point can be reached by the robot 
+        through its name (e.g. navigato_to(name[0], name[1]))
 
-        .. note:: After loading a map into robot or after new exploration \
-        robots always need to run a self localization. Even some movement in \
-        cartesian space demands localization.
+        .. note:: If the point to be reached is too far away, 
+        it may be useful to include intermediate points
+
+        :param name: Key of key:value pair in point_of_interest dictionary
+        :type name: string
+        :return: [x, y, theta]
+        :rtype: list
+
+        :Example:
+
+        >>> pepper._robot_localization("endpoint")
+        >>> pepper.navigate_to(
+            pepper.point_of_interests["endpoint"][0],
+            pepper.point_of_interests["endpoint"][1]) 
         """
-        # TODO: There should be localizeInMap() with proper coordinates
+        
         try:
             self.navigation_service.startLocalization()
             localization = self.navigation_service.getRobotPositionInMap() # Returns an ALValue containing a Localized Pose.
-            self.point_of_interests[point_of_interest] = localization[0] # localization[0] should be equals to [x, y, Theta]
+            self.point_of_interests[name] = localization[0] # localization[0] should be equals to [x, y, Theta]
             print("[INFO]: Localization complete")
             self.navigation_service.stopLocalization()
         except Exception as error:
             print(error)
             print("[ERROR]: Localization failed")
-        return self.point_of_interests[point_of_interest]
+        return self.point_of_interests[name]
 
-    def _navigate_to(self, x, y):
+    def navigate_to(self, x, y, theta = 0):
         """
         Navigate robot in map based on exploration mode
         or load previously mapped enviroment.
@@ -336,11 +298,13 @@ class Pepper:
         :type x: float
         :param y: Y axis in meters
         :type y: float
+        :param theta: Theta angle in meters
+        :type theta: float
         """
         print("[INFO]: Trying to navigate into specified location")
         try:
             self.navigation_service.startLocalization()
-            self.navigation_service.navigateToInMap([x, y, 0])
+            self.navigation_service.navigateToInMap([x, y, theta])
             self.navigation_service.stopLocalization()
             print("[INFO]: Successfully got into location")
             self.say("At your command")
@@ -348,9 +312,6 @@ class Pepper:
             print(error)
             print("[ERROR]: Failed to got into location")
             self.say("I cannot move in that direction")
-
-# ------------------------------------------------------
-
 
     def robot_localization(self):
         """
@@ -598,37 +559,6 @@ class Pepper:
     def turn_off_leds(self):
         """Turn off the LEDs in robot's eyes"""
         self.blink_eyes([0, 0, 0])
-
-    def navigate_to(self, x, y):
-        """
-        Navigate robot in map based on exploration mode
-        or load previously mapped enviroment.
-
-        .. note:: Before navigation you have to run localization of the robot.
-
-        .. warning:: Navigation to 2D point work only up to 3 meters from robot.
-
-        :Example:
-
-        >>> pepper.robot_localization()
-        >>> pepper.navigate_to(1.0, 0.3)
-
-        :param x: X axis in meters
-        :type x: float
-        :param y: Y axis in meters
-        :type y: float
-        """
-        print("[INFO]: Trying to navigate into specified location")
-        try:
-            self.navigation_service.startLocalization()
-            self.navigation_service.navigateToInMap([x, y, 0])
-            self.navigation_service.stopLocalization()
-            print("[INFO]: Successfully got into location")
-            self.say("At your command")
-        except Exception as error:
-            print(error)
-            print("[ERROR]: Failed to got into location")
-            self.say("I cannot move in that direction")
 
     def unsubscribe_effector(self):
         """

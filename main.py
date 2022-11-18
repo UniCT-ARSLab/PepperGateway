@@ -8,14 +8,13 @@ pepper.stop_all_behavior()
 # pepper.clean_tablet()
 pepper.autonomous_life_on()
 
-# TODAY
+# Set security distance (lower distance for passing doors)
 pepper.set_security_distance(0.01)
-print("Inizio a tracciare la mappa")
-pepper.exploration_mode(2) # Robot return to Origin at the end of exploration
-pepper.show_map()
-# ---------------------------------------
+print("[+] Starting exploration mode...")
+pepper.exploration_mode(2) # N.B. Robot return to Origin at the end of exploration
+pepper.show_map() # show_map() open saved map in a new window using OpenCV
 
-
+"""
 # 1
 pepper.set_security_distance(0.01)
 print("[INFO] Loading SLAM Map...")
@@ -33,4 +32,4 @@ pepper.say("Navigo verso il punto di interesse")
 pepper.navigate_to(
     pepper.point_of_interests["endpoint"][0],
     pepper.point_of_interests["endpoint"][1]) 
-    
+"""
