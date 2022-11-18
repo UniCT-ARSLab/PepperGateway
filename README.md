@@ -121,11 +121,11 @@ This is an example of how to list things you need to use the software and how to
    ```sh
    git clone https://github.com/UniCT-ARSLab/PepperGateway.git
    ```
-2. Build image
+2. Build Docker Image
    ```sh
    make build
    ```
-3. Run container
+3. Run container. Before run, make sure you have changed the volume path on the Makefile.
    ```sh
    make run
    ```
@@ -137,7 +137,7 @@ This is an example of how to list things you need to use the software and how to
 <!-- USAGE EXAMPLES -->
 ## Usage
 
-Use this space to show useful examples of how a project can be used. Additional screenshots, code examples and demos work well in this space. You may also link to more resources.
+<!-- Use this space to show useful examples of how a project can be used. Additional screenshots, code examples and demos work well in this space. You may also link to more resources. -->
 
 _For more examples, please refer to the [Documentation](https://example.com)_
 
@@ -148,9 +148,7 @@ _For more examples, please refer to the [Documentation](https://example.com)_
 <!-- ROADMAP -->
 ## Roadmap
 
-- [ ] Word spotting and speech recognition
-- [ ] Move robot
-    - [ ] Nested Feature
+- [ ] Set up environment.
 
 See the [open issues](https://github.com/UniCT-ARSLab/PepperGateway/issues) for a full list of proposed features (and known issues).
 
