@@ -82,6 +82,9 @@ class Pepper:
         self.localization = None
         self.camera_link = None
 
+        # look at this!!!
+        self.point_of_interests = {}
+
         self.recognizer = speech_recognition.Recognizer()
         # self.set_language("Italian") To fix!!!
 
@@ -242,7 +245,7 @@ class Pepper:
 
         self.slam_map = img
 
-    def show_map(self, index, on_robot=False, remote_ip=None):
+    def show_map(self, on_robot=False, remote_ip=None):
         """
         Shows a map from robot based on previously loaded one
         or explicit exploration of the scene. It can be viewed on
@@ -287,11 +290,67 @@ class Pepper:
             self.tablet_show_web(remote_ip + ":8000/map.png")
             print("[INFO]: Map is available at: " + str(remote_ip) + ":8000/map.png")
         else:
-            map_name = "map-" + str(index) + ".png"
+            map_name = "map.png"
             cv2.imwrite(map_name, robot_map)
-            #cv2.imshow("RobotMap", robot_map)
-            #cv2.waitKey(0)
-            #cv2.destroyAllWindows()
+            cv2.imshow("RobotMap", robot_map)
+            cv2.waitKey(0)
+            cv2.destroyAllWindows()
+
+# ------------------------------------------------------------------
+
+    def _robot_localization(self, point_of_interest):
+        """
+        Localize a robot in a map
+
+        .. note:: After loading a map into robot or after new exploration \
+        robots always need to run a self localization. Even some movement in \
+        cartesian space demands localization.
+        """
+        # TODO: There should be localizeInMap() with proper coordinates
+        try:
+            self.navigation_service.startLocalization()
+            localization = self.navigation_service.getRobotPositionInMap() # Returns an ALValue containing a Localized Pose.
+            self.point_of_interests[point_of_interest] = localization[0] # localization[0] should be equals to [x, y, Theta]
+            print("[INFO]: Localization complete")
+            self.navigation_service.stopLocalization()
+        except Exception as error:
+            print(error)
+            print("[ERROR]: Localization failed")
+        return self.point_of_interests[point_of_interest]
+
+    def _navigate_to(self, x, y):
+        """
+        Navigate robot in map based on exploration mode
+        or load previously mapped enviroment.
+
+        .. note:: Before navigation you have to run localization of the robot.
+
+        .. warning:: Navigation to 2D point work only up to 3 meters from robot.
+
+        :Example:
+
+        >>> pepper.robot_localization()
+        >>> pepper.navigate_to(1.0, 0.3)
+
+        :param x: X axis in meters
+        :type x: float
+        :param y: Y axis in meters
+        :type y: float
+        """
+        print("[INFO]: Trying to navigate into specified location")
+        try:
+            self.navigation_service.startLocalization()
+            self.navigation_service.navigateToInMap([x, y, 0])
+            self.navigation_service.stopLocalization()
+            print("[INFO]: Successfully got into location")
+            self.say("At your command")
+        except Exception as error:
+            print(error)
+            print("[ERROR]: Failed to got into location")
+            self.say("I cannot move in that direction")
+
+# ------------------------------------------------------
+
 
     def robot_localization(self):
         """
@@ -304,7 +363,7 @@ class Pepper:
         # TODO: There should be localizeInMap() with proper coordinates
         try:
             self.navigation_service.startLocalization()
-            localization = self.navigation_service.getRobotPositionInMap()
+            localization = self.navigation_service.getRobotPositionInMap() # Returns an ALValue containing a Localized Pose.
             self.localization = localization[0]
             print("[INFO]: Localization complete")
             self.navigation_service.stopLocalization()
