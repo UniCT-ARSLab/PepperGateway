@@ -32,7 +32,7 @@
 <br />
 <div align="center">
   <a href="https://github.com/UniCT-ARSLab/PepperGateway">
-    <img src="images/logo.png" alt="Logo" width="80" height="50">
+    <img src="images/logo.png" alt="Logo" width="250" height="250">
   </a>
 
 <h3 align="center">Pepper Gateway</h3>
