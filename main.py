@@ -7,12 +7,18 @@ pepper = Pepper(config.IP_ADDRESS, config.PORT)
 pepper.stop_all_behavior()
 # pepper.clean_tablet()
 pepper.autonomous_life_on()
+pepper.start_behavior("miry-01/behavior_1")
+pepper.list_behavior()
+# pepper.share_localhost("/Users/giuseppepitruzzella/PepperGateway/images/")
+# while True:
+#     pepper.show_tablet_camera("camera top")
+#     pepper.tablet_show_web("http://192.168.1.20:8000/logo.png")
 
-# Set security distance (lower distance for passing doors)
-pepper.set_security_distance(0.01)
-print("[+] Starting exploration mode...")
-pepper.exploration_mode(2) # N.B. Robot return to Origin at the end of exploration
-pepper.show_map() # show_map() open saved map in a new window using OpenCV
+# # Set security distance (lower distance for passing doors)
+# pepper.set_security_distance(0.01)
+# print("[+] Starting exploration mode...")
+# pepper.exploration_mode(5) # N.B. Robot return to Origin at the end of exploration
+# pepper.show_map() # show_map() open saved map in a new window using OpenCV
 
 """
 # 1
