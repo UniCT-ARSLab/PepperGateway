@@ -1,23 +1,6 @@
-<!-- Improved compatibility of Back to 🔝 link: See: https://github.com/othneildrew/Best-README-Template/pull/73 -->
 <a name="readme-top"></a>
-<!--
-*** Thanks for checking out the Best-README-Template. If you have a suggestion
-*** that would make this better, please fork the repo and create a pull request
-*** or simply open an issue with the tag "enhancement".
-*** Don't forget to give the project a star!
-*** Thanks again! Now go create something AMAZING! :D
--->
-
-
 
 <!-- PROJECT SHIELDS -->
-<!--
-*** I'm using markdown "reference style" links for readability.
-*** Reference links are enclosed in brackets [ ] instead of parentheses ( ).
-*** See the bottom of this document for the declaration of the reference variables
-*** for contributors-url, forks-url, etc. This is an optional, concise syntax you may use.
-*** https://www.markdownguide.org/basic-syntax/#reference-style-links
--->
 <!--
 [![Contributors][contributors-shield]][contributors-url]
 [![Forks][forks-shield]][forks-url]
@@ -40,7 +23,7 @@
   <p align="center">
     Project Description
     <br />
-    <a href="https://github.com/UniCT-ARSLab/PepperGateway"><strong>Explore the docs »</strong></a>
+    <a href="https://github.com/UniCT-ARSLab/PepperGateway"><strong>Explore the Docs</strong></a>
     <br />
     <br />
     <a href="https://github.com/UniCT-ARSLab/PepperGateway">View Demo</a>
@@ -94,7 +77,7 @@ Here's a blank template to get started: To avoid retyping too much info. Do a se
 
 ### Built With
 
-* [![Python][Python.org]][JQuery-url]
+[![Python][Python.org]][JQuery-url]
 
 <p align="right">(<a href="#readme-top">Back to 🔝</a>)</p>
 
@@ -103,17 +86,14 @@ Here's a blank template to get started: To avoid retyping too much info. Do a se
 <!-- GETTING STARTED -->
 ## Getting Started
 
-This is an example of how you may give instructions on setting up your project locally.
-To get a local copy up and running follow these simple example steps.
+<!-- This is an example of how you may give instructions on setting up your project locally.
+To get a local copy up and running follow these simple example steps. -->
+
 
 ### Prerequisites
 
-First you need to download a Python SDK for Pepper, [PyNaoqi](http://doc.aldebaran.com/2-5/dev/python/install_guide.html).
-
-This is an example of how to list things you need to use the software and how to install them.
-  ```sh
-  make build
-  ```
+It is necessary to add `naoqi`, a third-party python package for using qi drivers. Download Python SDK for Pepper [here](http://doc.aldebaran.com/2-5/dev/python/install_guide.html).
+After downloading the SDK - and cloned this repository - move it inside the root folder (e.g. `mv pynaoqi PepperGateway/`).
 
 ### Installation
 
