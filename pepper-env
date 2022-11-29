@@ -14,7 +14,4 @@ RUN pip install -r requirements.txt
 
 EXPOSE 6566
 
-CMD python /app/main.py
-
-# docker build -t pepper-test  .  
-# docker run --rm -it -v /Users/giuseppepitruzzella/PepperGateway/:/app/ -p 5000:5000 --name pepper-test pepper-test
+CMD python -m /app/gateway/app.py

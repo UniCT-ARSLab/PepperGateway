@@ -10,3 +10,5 @@ paramiko
 scp 
 inputs
 SpeechRecognition
+Flask
+flask_sqlalchemy
