@@ -1,4 +1,0 @@
-Setup directory with existing code. Setup Dockerfile, Makefile and few working methods in a separate file. Import Gateway.
-tablet_show_settings in robot.py
-
-scp nao@192.168.1.20:/home/nao/.local/share/Explorer/2014-04-04T003429.314Z.explo ~/PepperGateway/map_davanti_lab_01

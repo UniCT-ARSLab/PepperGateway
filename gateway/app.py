@@ -1,15 +1,10 @@
 from flask import Flask, render_template, request, redirect, url_for
 from flask_sqlalchemy import SQLAlchemy
 
-
-import sys
-sys.path.append('..')
-from .. import *
-
+from pepper import *
 import config
 import time
-
-pepper = Pepper(config.IP_ADDRESS, config.PORT)
+from time import sleep
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///db.sqlite'
@@ -57,4 +52,7 @@ def delete(id):
 if (__name__ == "__main__"):
     app.app_context().push()
     db.create_all()
+
+    pepper = Pepper(config.IP_ADDRESS, config.PORT)
+
     app.run(debug=True)
