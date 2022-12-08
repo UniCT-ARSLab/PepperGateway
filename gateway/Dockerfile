@@ -6,7 +6,7 @@ COPY requirements.txt /app/requirements.txt
 ENV PYTHONPATH "${PYTHONPATH}:/app/pynaoqi-python2.7-2.5.5.5-linux64/lib/python2.7/site-packages"
 ENV PEPPER_IP "192.168.1.20"
 ENV PORT = 9559
-ENV FLASK_APP=main.py
+ENV FLASK_APP="main.py"
 ENV FLASK_RUN_HOST=0.0.0.0
 ENV FLASK_ENV="development"
 ENV FLASK_RUN_PORT=5000

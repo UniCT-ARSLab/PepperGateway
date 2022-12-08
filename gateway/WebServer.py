@@ -19,7 +19,7 @@ class WebServer:
     def startServer(self):
         self.flaskApp.app_context().push()
         self.db.create_all()
-        self.flaskApp.run(debug=True)
+        self.flaskApp.run(debug=True, host='0.0.0.0')
 
     def defineRoutes(self):
         @self.flaskApp.route('/')
