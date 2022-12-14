@@ -47,8 +47,8 @@ class WebServer:
 
         @app.route('/')
         def index():
-            target_list = Target.query.all() # SELECT * FROM target;
-            return render_template('index.html', target_list=target_list)
+            targetList = Target.query.all() # SELECT * FROM target;
+            return render_template('index.html', targetList=targetList)
             # return render_template('index.html')
 
         @app.route('/add', methods=['POST'])
@@ -56,8 +56,8 @@ class WebServer:
             sleep(3) # Delay useful to display form animation
             target_name = request.form.get('target_name')
 
-            new_target = Target(text=target_name, x=0, y=0, theta=0)
-            db.session.add(new_target)
+            item = Target(text=target_name, x=0, y=0, theta=0)
+            db.session.add(item)
             db.session.commit()
             return redirect(url_for('index'))
 
