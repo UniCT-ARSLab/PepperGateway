@@ -2,7 +2,7 @@ import qi
 import time
 import numpy
 import cv2
-import speech_recognition
+# import speech_recognition
 import gtts
 import playsound
 import subprocess
@@ -73,7 +73,7 @@ class Pepper:
         # It contains all saved point of interests
         self.point_of_interests = {}
 
-        self.recognizer = speech_recognition.Recognizer()
+        # self.recognizer = speech_recognition.Recognizer()
         # self.set_language("Italian") To fix!!!
 
         #self.autonomous_life_on()
@@ -893,20 +893,20 @@ class Pepper:
         print("[INFO]: File " + file_name + " downloaded")
         self.scp.close()
 
-    def speech_to_text(self, audio_file):
-        """
-        Translate speech to text via Google Speech API
+    # def speech_to_text(self, audio_file):
+    #     """
+    #     Translate speech to text via Google Speech API
 
-        :param audio_file: Name of the audio (default `speech.wav`
-        :type audio_file: string
-        :return: Text of the speech
-        :rtype: string
-        """
-        audio_file = speech_recognition.AudioFile("/tmp/" + audio_file)
-        with audio_file as source:
-            audio = self.recognizer.record(source)
-            recognized = self.recognizer.recognize_google(audio, language="it_IT")
-        return recognized
+    #     :param audio_file: Name of the audio (default `speech.wav`
+    #     :type audio_file: string
+    #     :return: Text of the speech
+    #     :rtype: string
+    #     """
+    #     audio_file = speech_recognition.AudioFile("/tmp/" + audio_file)
+    #     with audio_file as source:
+    #         audio = self.recognizer.record(source)
+    #         recognized = self.recognizer.recognize_google(audio, language="it_IT")
+    #     return recognized
 
     def get_robot_name(self):
         """
@@ -966,13 +966,13 @@ class VirtualPepper:
         tts.save("./tmp_speech.mp3")
         playsound.playsound("./tmp_speech.mp3")
 
-    @staticmethod
-    def listen():
-        """Speech to text by Google Speech Recognition"""
-        recognizer = speech_recognition.Recognizer()
-        with speech_recognition.Microphone() as source:
-            print("[INFO]: Say something...")
-            audio = recognizer.listen(source)
-            speech = recognizer.recognize_google(audio, language="it-IT")
+    # @staticmethod
+    # def listen():
+    #     """Speech to text by Google Speech Recognition"""
+    #     recognizer = speech_recognition.Recognizer()
+    #     with speech_recognition.Microphone() as source:
+    #         print("[INFO]: Say something...")
+    #         audio = recognizer.listen(source)
+    #         speech = recognizer.recognize_google(audio, language="it-IT")
 
-            return speech
+    #         return speech
