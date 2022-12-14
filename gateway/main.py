@@ -1,4 +1,4 @@
-from robot import *
+from pepper import *
 import config
 import time
 
