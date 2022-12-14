@@ -1,16 +1,24 @@
 from flask import Flask, render_template, request, redirect, url_for
 from flask_sqlalchemy import SQLAlchemy
-# from Target import Target
 import threading
 from time import sleep
-class WebServer:
-    def __init__(self, config):     
-        self.flaskApp = Flask(config) # Config is __name__ in previous code
-        self.flaskApp.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///db.sqlite'
-        self.flaskApp.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-        self.defineRoutes()
 
-        self.db = SQLAlchemy(self.flaskApp)
+class WebServer:
+    flaskApp = Flask(__name__)
+    flaskApp.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///db.sqlite'
+    flaskApp.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+    db = SQLAlchemy(flaskApp)
+
+    # class Target(db.Model):
+    #     from WebServer import WebServer.db
+    #     id = db.Column(db.Integer, primary_key=True)
+    #     # text = db.Column(db.String(100))
+    #     # x = db.Column(db.Integer)
+    #     # y = db.Column(db.Integer)
+    #     # theta = db.Column(db.Integer)
+
+    def __init__(self, config):     
+        self.defineRoutes()
 
         # self.mainThread = threading.Thread(target=self.startServer)
         # self.mainThread.start()
@@ -24,10 +32,9 @@ class WebServer:
     def defineRoutes(self):
         @self.flaskApp.route('/')
         def index():
-            # target_list = self.target.query.all() # SELECT * FROM target;
-            # print(target_list)
-            # return render_template('index.html', target_list=target_list)
-            return render_template('index.html')
+            target_list = self.db.query.all() # SELECT * FROM target;
+            return render_template('index.html', target_list=target_list)
+            # return render_template('index.html')
 
         @self.flaskApp.route('/add', methods=['POST'])
         def add(): # Add new target to the database
@@ -45,10 +52,3 @@ class WebServer:
             self.db.session.delete(item)
             self.db.session.commit()
             return redirect(url_for('index'))
-        
-    def setupDatabase(self, text, x, y, theta):
-        id = self.db.Column(self.db.Integer, primary_key=True)
-        text = self.db.Column(self.db.String(100))
-        x = self.db.Column(self.db.Integer)
-        y = self.db.Column(self.db.Integer)
-        theta = self.db.Column(self.db.Integer)
