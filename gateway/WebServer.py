@@ -23,40 +23,31 @@ class WebServer:
         self.defineRoutes()
         self.startServer()
 
-    def __init__(self):   
-        self.defineRoutes()
-        self.startServer()
-
     def startServer(self):
-        # app.app_context().push()
+        app.app_context().push()
         db.create_all()
-
-        new_todo = Target(text="test", x=1, y=2, theta=3)
-        db.session.add(new_todo)
-        db.session.commit()
-
         app.run(debug=True, host='0.0.0.0', port=5000)
 
     def defineRoutes(self):
-        # @app.route('/')
-        # def index():
-        #     # self.robot.say("Web server started")
-        #     todos = Target.query.all()
-        #     print(todos)
-        #     return render_template('index.html')
-
         @app.route('/')
         def index():
+            self.robot.load_map("/home/nao/.local/share/Explorer/2014-04-04T002817.409Z.explo")
             targetList = Target.query.all() # SELECT * FROM target;
             return render_template('index.html', targetList=targetList)
-            # return render_template('index.html')
 
         @app.route('/add', methods=['POST'])
         def add():
             sleep(3) # Delay useful to display form animation
             target_name = request.form.get('target_name')
 
-            item = Target(text=target_name, x=0, y=0, theta=0)
+            # item = Target(text=target_name, x=0, y=0, theta=0)
+
+            self.robot.robot_localization()
+            item = Target(text=target_name, 
+                x=round(self.robot.localization[0], 2), 
+                y=round(self.robot.localization[1], 2), 
+                theta=round(self.robot.localization[2], 2))
+            
             db.session.add(item)
             db.session.commit()
             return redirect(url_for('index'))
@@ -66,6 +57,15 @@ class WebServer:
             item = Target.query.filter_by(id=id).first()
             db.session.delete(item)
             db.session.commit()
+            return redirect(url_for('index'))
+
+        @app.route('/get/<int:id>')
+        def get(id):
+            item = Target.query.filter_by(id=id).first()
+            
+            self.robot.say("Eseguo lo spostamento verso " + item.text)
+            self.robot.robot_localization()
+            self.robot.navigate_to(item.x, item.y, item.theta)
             return redirect(url_for('index'))
 
     

@@ -247,6 +247,23 @@ class Pepper:
             cv2.waitKey(0)
             cv2.destroyAllWindows()
 
+    def move_forward(self, speed):
+        """
+        Move forward with certain speed
+        :param speed: Positive values forward, negative backwards
+        :type speed: float
+        """
+        self.motion_service.move(speed, 0, 0)
+
+    def turn_around(self, speed):
+        """
+        Turn around its axis
+        :param speed: Positive values to right, negative to left
+        :type speed: float
+        """
+        self.motion_service.move(0, 0, speed)
+
+
     def setup_point(self, name):
         """
         Setup point of interest in a map.
@@ -336,6 +353,41 @@ class Pepper:
         """Stop localization of the robot"""
         self.navigation_service.stopLocalization()
         print("[INFO]: Localization stopped")
+    
+    def exploration_mode(self, radius):
+        """
+        Start exploration mode when robot it performing a SLAM
+        in specified radius. Then it saves a map into robot into
+        its default folder.
+        .. seealso:: When robot would not move maybe it only needs \
+        to set smaller safety margins. Take a look and `set_security_distance()`
+        .. note:: Default folder for saving maps on the robot is: \
+        `/home/nao/.local/share/Explorer/`
+        :param radius: Distance in meters
+        :type radius: integer
+        :return: image
+        :rtype: cv2 image
+        """
+        self.say("Starting exploration in " + str(radius) + " meters")
+        self.navigation_service.explore(radius)
+        map_file = self.navigation_service.saveExploration()
+
+        print("[INFO]: Map file stored: " + map_file)
+
+        self.navigation_service.startLocalization()
+        self.navigation_service.navigateToInMap([0., 0., 0.])
+        self.navigation_service.stopLocalization()
+
+        # Retrieve and display the map built by the robot
+        result_map = self.navigation_service.getMetricalMap()
+        map_width = result_map[1]
+        map_height = result_map[2]
+        img = numpy.array(result_map[4]).reshape(map_width, map_height)
+        img = (100 - img) * 2.55  # from 0..100 to 255..0
+        img = numpy.array(img, numpy.uint8)
+
+        self.slam_map = img
+
 
     def load_map(self, file_name, file_path="/home/nao/.local/share/Explorer/"):
         """
