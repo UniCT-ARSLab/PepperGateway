@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Index</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.1/css/all.min.css" integrity="sha512-MV7K8+y+gLIBoVD59lQIYicR65iaqukzvf/nwasF0nqhPay5w/9lJmVM2hMDcnK1OnMGCdVK+iQrJ7lzPJQd1w==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/chat.css') }}">
+</head>
+<body>
+    <div class="logo">
+        <img src="{{ url_for('static', filename='img/logo.png') }}" alt="logo" width="250px">
+    </div>
+    <div>
+        <ul class="menu">
+            <li class="menu-items items-left"><a class="menu-items active" href="/">Home</a></li>
+            <li class="menu-items items-left"><a class="menu-items" href="/chat">Chat</a></li>
+            <li class="menu-items items-right"><a class="menu-items" href="/say">Contact</a></li>
+            <li class="menu-items items-right"><a class="menu-items" href="/settings">Settings</a></li>
+        </ul>
+    </div>
+
+    <!-- --------------- -->
+    <div class="chat">
+        <div class="messages">
+          <div class="messages-content"></div>
+        </div>
+        <div class="message-box">
+          <textarea type="text" class="message-input" placeholder="Type message..."></textarea>
+          <button type="submit" class="message-submit">Send</button>
+        </div>
+      
+      </div>
+    <div class="bg"></div>
+
+    <script type="text/javascript" src="{{ url_for('static', filename='js/chat.js') }}"></script>
+</body>
+</html>
