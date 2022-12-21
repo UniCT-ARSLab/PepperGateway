@@ -1,15 +1,3 @@
-<!-- Improved compatibility of Back to 🔝 link: See: https://github.com/othneildrew/Best-README-Template/pull/73 -->
-<a name="readme-top"></a>
-<!--
-*** Thanks for checking out the Best-README-Template. If you have a suggestion
-*** that would make this better, please fork the repo and create a pull request
-*** or simply open an issue with the tag "enhancement".
-*** Don't forget to give the project a star!
-*** Thanks again! Now go create something AMAZING! :D
--->
-
-
-
 <!-- PROJECT SHIELDS -->
 <!--
 *** I'm using markdown "reference style" links for readability.
@@ -38,9 +26,8 @@
 <h3 align="center">Pepper Gateway</h3>
 
   <p align="center">
-    Project Description
+Repository contains the project for my BsC Degree. It is based on the implementation of a gateway for the Pepper robot, which can establish a point of contact between the user and the robot itself. In this way, the user can interface with the robot, order movements and/or information, or more generally request tasks. The latter are carried out completely autonomously by the robot.
     <br />
-    <a href="https://github.com/UniCT-ARSLab/PepperGateway"><strong>Explore the docs »</strong></a>
     <br />
     <br />
     <a href="https://github.com/UniCT-ARSLab/PepperGateway">View Demo</a>
@@ -51,66 +38,17 @@
   </p>
 </div>
 
-
-
-<!-- TABLE OF CONTENTS -->
-<details>
-  <summary>Table of Contents</summary>
-  <ol>
-    <li>
-      <a href="#about-the-project">About The Project</a>
-      <ul>
-        <li><a href="#built-with">Built With</a></li>
-      </ul>
-    </li>
-    <li>
-      <a href="#getting-started">Getting Started</a>
-      <ul>
-        <li><a href="#prerequisites">Prerequisites</a></li>
-        <li><a href="#installation">Installation</a></li>
-      </ul>
-    </li>
-    <li><a href="#usage">Usage</a></li>
-    <li><a href="#roadmap">Roadmap</a></li>
-    <li><a href="#contributing">Contributing</a></li>
-    <li><a href="#license">License</a></li>
-    <li><a href="#contact">Contact</a></li>
-    <li><a href="#acknowledgments">Acknowledgments</a></li>
-  </ol>
-</details>
-
-
-
-<!-- ABOUT THE PROJECT -->
-## About The Project
-
-[![Product Name Screen Shot][product-screenshot]](https://example.com)
-
-Here's a blank template to get started: To avoid retyping too much info. Do a search and replace with your text editor for the following: `github_username`, `repo_name`, `twitter_handle`, `linkedin_username`, `email_client`, `email`, `project_title`, `project_description`
-
-<p align="right">(<a href="#readme-top">Back to 🔝</a>)</p>
-
-
-
-### Built With
-
-* [![Python][Python.org]][JQuery-url]
-
-<p align="right">(<a href="#readme-top">Back to 🔝</a>)</p>
+#### Built With
+`Python 2.7`
 
 
 
 <!-- GETTING STARTED -->
 ## Getting Started
 
-This is an example of how you may give instructions on setting up your project locally.
-To get a local copy up and running follow these simple example steps.
-
 ### Prerequisites
 
 First you need to download a Python SDK for Pepper, [PyNaoqi](http://doc.aldebaran.com/2-5/dev/python/install_guide.html).
-
-This is an example of how to list things you need to use the software and how to install them.
   ```sh
   make build
   ```
@@ -130,8 +68,6 @@ This is an example of how to list things you need to use the software and how to
    make run
    ```
 
-<p align="right">(<a href="#readme-top">Back to 🔝</a>)</p>
-
 
 
 <!-- USAGE EXAMPLES -->
@@ -140,19 +76,6 @@ This is an example of how to list things you need to use the software and how to
 <!-- Use this space to show useful examples of how a project can be used. Additional screenshots, code examples and demos work well in this space. You may also link to more resources. -->
 
 _For more examples, please refer to the [Documentation](https://example.com)_
-
-<p align="right">(<a href="#readme-top">Back to 🔝</a>)</p>
-
-
-
-<!-- ROADMAP -->
-## Roadmap
-
-- [ ] Set up environment.
-
-See the [open issues](https://github.com/UniCT-ARSLab/PepperGateway/issues) for a full list of proposed features (and known issues).
-
-<p align="right">(<a href="#readme-top">Back to 🔝</a>)</p>
 
 
 
@@ -170,16 +93,10 @@ Don't forget to give the project a star! Thanks again!
 4. Push to the Branch (`git push origin feature/AmazingFeature`)
 5. Open a Pull Request
 
-<p align="right">(<a href="#readme-top">Back to 🔝</a>)</p>
-
-
 
 <!-- LICENSE -->
 ## License
-
 Distributed under the GNU GPLv3 License. See `LICENSE.txt` for more information.
-
-<p align="right">(<a href="#readme-top">Back to 🔝</a>)</p>
 
 
 
@@ -187,16 +104,3 @@ Distributed under the GNU GPLv3 License. See `LICENSE.txt` for more information.
 ## Contact
 
 Project Link: [https://github.com/UniCT-ARSLab/PepperGateway](https://github.com/UniCT-ARSLab/PepperGateway)
-
-<p align="right">(<a href="#readme-top">Back to 🔝</a>)</p>
-
-
-
-<!-- ACKNOWLEDGMENTS -->
-## Acknowledgments
-
-* []()
-* []()
-* []()
-
-<p align="right">(<a href="#readme-top">Back to 🔝</a>)</p>
