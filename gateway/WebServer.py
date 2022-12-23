@@ -23,6 +23,10 @@ class WebServer:
         self.defineRoutes()
         self.startServer()
 
+    def __init__(self):   
+        self.defineRoutes()
+        self.startServer()
+
     def startServer(self):
         app.app_context().push()
         db.create_all()
@@ -31,9 +35,14 @@ class WebServer:
     def defineRoutes(self):
         @app.route('/')
         def index():
-            self.robot.load_map("/home/nao/.local/share/Explorer/2014-04-04T002817.409Z.explo")
+            # self.robot.load_map("/home/nao/.local/share/Explorer/2014-04-04T030832.649Z.explo")
+            # self.robot.exploration_mode(10)
             targetList = Target.query.all() # SELECT * FROM target;
             return render_template('index.html', targetList=targetList)
+
+        @app.route('/chat/')
+        def chat():
+            return render_template('chat.html')
 
         @app.route('/add', methods=['POST'])
         def add():
@@ -44,9 +53,9 @@ class WebServer:
 
             self.robot.robot_localization()
             item = Target(text=target_name, 
-                x=round(self.robot.localization[0], 2), 
-                y=round(self.robot.localization[1], 2), 
-                theta=round(self.robot.localization[2], 2))
+                x=self.robot.localization[0], 
+                y=self.robot.localization[1], 
+                theta=self.robot.localization[2])
             
             db.session.add(item)
             db.session.commit()
@@ -63,11 +72,25 @@ class WebServer:
         def get(id):
             item = Target.query.filter_by(id=id).first()
             
-            self.robot.say("Eseguo lo spostamento verso " + item.text)
-            self.robot.robot_localization()
-            self.robot.navigate_to(item.x, item.y, item.theta)
+            # self.robot.say("Eseguo lo spostamento verso " + item.text)
+            # self.robot.robot_localization()
+            # self.robot.navigate_to(item.x, item.y, item.theta)
             return redirect(url_for('index'))
 
+        @app.route('/say', methods=['POST'])
+        def say():
+            self.robot.say(request.form.get('text'))
+            return redirect(url_for('index'))
+
+        @app.route('/awareness_on', methods=['POST'])
+        def awareness_on():
+            self.robot.set_awareness(True)
+            return redirect(url_for('index'))
+        
+        @app.route('/awareness_off', methods=['POST'])
+        def awareness_off():
+            self.robot.set_awareness(False)
+            return redirect(url_for('index'))
     
 
     

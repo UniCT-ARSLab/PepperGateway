@@ -21,18 +21,14 @@
         </ul>
     </div>
 
-    <!-- --------------- -->
-    <div class="chat">
-        <div class="messages">
-          <div class="messages-content"></div>
-        </div>
-        <div class="message-box">
-          <textarea type="text" class="message-input" placeholder="Type message..."></textarea>
-          <button type="submit" class="message-submit">Send</button>
-        </div>
-      
-      </div>
-    <div class="bg"></div>
+    <div class="container">
+      	<form action="/sendMessage" method="post" class="">
+        	<div class="form-container">
+          		<input type="text" name="text" class="text-box" id="text" placeholder="Scrivi qualcosa...">
+          		<button class="subscribe_button" onclick="sendOnClick()" type="submit">Invia</button>
+        	</div>
+    	</form>
+    </div>
 
     <script type="text/javascript" src="{{ url_for('static', filename='js/chat.js') }}"></script>
 </body>
