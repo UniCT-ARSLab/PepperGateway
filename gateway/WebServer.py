@@ -23,9 +23,9 @@ class WebServer:
         self.defineRoutes()
         self.startServer()
 
-    def __init__(self):   
-        self.defineRoutes()
-        self.startServer()
+    # def __init__(self):   
+    #     self.defineRoutes()
+    #     self.startServer()
 
     def startServer(self):
         app.app_context().push()
@@ -40,9 +40,9 @@ class WebServer:
             targetList = Target.query.all() # SELECT * FROM target;
             return render_template('index.html', targetList=targetList)
 
-        @app.route('/chat/')
-        def chat():
-            return render_template('chat.html')
+        @app.route('/environment/')
+        def environment():
+            return render_template('environment.html')
 
         @app.route('/add', methods=['POST'])
         def add():
@@ -90,6 +90,12 @@ class WebServer:
         @app.route('/awareness_off', methods=['POST'])
         def awareness_off():
             self.robot.set_awareness(False)
+            return redirect(url_for('index'))
+        
+        @app.route('/rotate')
+        def rotate():
+            self.robot.say("Avvio rotazione")
+            self.robot.turn_around(0.1)
             return redirect(url_for('index'))
     
 
