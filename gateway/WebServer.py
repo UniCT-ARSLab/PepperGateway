@@ -18,7 +18,7 @@ class Target(db.Model):
     theta = db.Column(db.Integer)
 
 class WebServer:
-    def __init__(self, robot):
+    def __init__(self, robot = None):
         self.robot = robot    
         self.defineRoutes()
         self.startServer()
@@ -40,16 +40,17 @@ class WebServer:
             targetList = Target.query.all() # SELECT * FROM target;
             return render_template('index.html', targetList=targetList)
 
-        @app.route('/environment/')
-        def environment():
-            return render_template('environment.html')
+        @app.route('/pointsOfInterests')
+        def pointsOfInterests():
+            return render_template('pointsOfInterest.html')
+
+        @app.route('/joypadMode')
+        def joypadMode():
+            return render_template('joypadMode.html')
 
         @app.route('/add', methods=['POST'])
         def add():
-            sleep(3) # Delay useful to display form animation
             target_name = request.form.get('target_name')
-
-            # item = Target(text=target_name, x=0, y=0, theta=0)
 
             self.robot.robot_localization()
             item = Target(text=target_name, 
@@ -59,14 +60,14 @@ class WebServer:
             
             db.session.add(item)
             db.session.commit()
-            return redirect(url_for('index'))
+            return redirect(url_for('pointsOfInterest'))
 
         @app.route('/delete/<int:id>')
         def delete(id):
             item = Target.query.filter_by(id=id).first()
             db.session.delete(item)
             db.session.commit()
-            return redirect(url_for('index'))
+            return redirect(url_for('pointsOfInterest'))
 
         @app.route('/get/<int:id>')
         def get(id):
@@ -75,28 +76,25 @@ class WebServer:
             # self.robot.say("Eseguo lo spostamento verso " + item.text)
             # self.robot.robot_localization()
             # self.robot.navigate_to(item.x, item.y, item.theta)
-            return redirect(url_for('index'))
+            return redirect(url_for('pointsOfInterest'))
 
         @app.route('/say', methods=['POST'])
         def say():
             self.robot.say(request.form.get('text'))
             return redirect(url_for('index'))
-
-        @app.route('/awareness_on', methods=['POST'])
-        def awareness_on():
-            self.robot.set_awareness(True)
-            return redirect(url_for('index'))
         
-        @app.route('/awareness_off', methods=['POST'])
-        def awareness_off():
-            self.robot.set_awareness(False)
-            return redirect(url_for('index'))
-        
-        @app.route('/rotate')
+        @app.route('/rotate', methods=['POST'])
         def rotate():
-            self.robot.say("Avvio rotazione")
-            self.robot.turn_around(0.1)
-            return redirect(url_for('index'))
+            print("Test passed!")
+            # self.robot.say(request.form.get('data'))
+            # self.robot.turn_around(request.form.get('data'))
+            return redirect(url_for('environment'))
+
+        @app.route('/move', methods=['POST'])
+        def move():
+            print(request.form.get('data'))
+            return redirect(url_for('environment'))
+            # self.robot.move_forward(request.form.get('data'))
     
 
     

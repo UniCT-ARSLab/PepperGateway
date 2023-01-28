@@ -4,10 +4,12 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.5.4/socket.io.min.js" integrity="sha512-HTENHrkQ/P0NGDFd5nk6ibVtCkcM7jhr2c7GyvXp5O+4X6O5cQO9AhqFzM+MdeBivsX7Hoys2J7pp2wdgMpCvw==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/nipplejs/0.10.0/nipplejs.js" integrity="sha512-+51ykZ6kGNAEm+QvXP+iadxWg3XZGTD9I1GLhJILv9gvTzHdmwik3xKjZ4ieYn8Oua0+3NGIwWwDHMl6kR4ufQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/1.2.3/axios.min.js" integrity="sha512-L4lHq2JI/GoKsERT8KYa72iCwfSrKYWEyaBxzJeeITM9Lub5vlTj8tufqYk056exhjo2QDEipJrg6zen/DDtoQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-    <title>Document</title>
+    <!-- <link rel="stylesheet" href="/static/css/style.css"> -->
+    <script type="text/javascript" src="/static/js/script.js"></script>
 </head>
 <body>
     <div class="relative bg-white">
@@ -15,27 +17,27 @@
             <div class="flex items-center justify-between border-b-2 border-gray-100 py-6 md:justify-start md:space-x-10">
                 <div class="flex justify-start lg:w-0 lg:flex-1"></div>
                 <div class="-my-2 -mr-2 md:hidden">
-                    <button type="button" class="inline-flex items-center justify-center rounded-md bg-white p-2 text-gray-400 hover:bg-gray-100 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-red-500" aria-expanded="false">
+                    <!-- <button type="button" class="inline-flex items-center justify-center rounded-md bg-white p-2 text-gray-400 hover:bg-gray-100 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-red-500" aria-expanded="false">
                         <span class="sr-only">Open menu</span>
                         
                         <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
                         </svg>
-                    </button>
+                    </button> -->
                 </div>
-            <nav class="hidden space-x-10 md:flex">
+            <nav class="space-x-10 md:flex">
                 <div class="relative">
                     
-                    <button type="button" class="text-gray-500 group inline-flex items-center rounded-md bg-white text-base font-medium hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2" aria-expanded="false">
+                    <button type="button" class="cursor-pointer text-gray-500 group inline-flex items-center rounded-md bg-white text-base font-medium hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2" aria-expanded="true" onclick="showMenu(this)">
                         <span>Movement</span>
                         <svg class="text-gray-400 ml-2 h-5 w-5 group-hover:text-gray-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
                             <path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clip-rule="evenodd" />
                         </svg>
                     </button>
-                    <div class="absolute z-10 -ml-4 mt-3 w-screen max-w-md transform px-2 sm:px-0 lg:left-1/2 lg:ml-0 lg:-translate-x-1/2">
-                        <div class="overflow-hidden rounded-lg shadow-lg ring-1 ring-black ring-opacity-5">
+                    <div id="movementDropdown" onclick="showMenu(this)" class="absolute z-10 -ml-4 mt-3 w-screen max-w-md transform px-2 sm:px-0 lg:left-1/2 lg:ml-0 lg:-translate-x-1/2">
+                        <div class="hidden overflow-hidden rounded-lg shadow-lg ring-1 ring-black ring-opacity-5">
                             <div class="relative grid gap-6 bg-white px-5 py-6 sm:gap-8 sm:p-8">
-                                <a href="/joypadMode" class="-m-3 flex items-start rounded-lg p-3 hover:bg-gray-50">
+                                <a href="/templates/joypadMode.html" class="-m-3 flex items-start rounded-lg p-3 hover:bg-gray-50">
                                 
                                     <svg class="h-6 w-6 flex-shrink-0 text-red-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true">
                                         <path stroke-linecap="round" stroke-linejoin="round" d="M15.042 21.672L13.684 16.6m0 0l-2.51 2.225.569-9.47 5.227 7.917-3.286-.672zM12 2.25V4.5m5.834.166l-1.591 1.591M20.25 10.5H18M7.757 14.743l-1.59 1.59M6 10.5H3.75m4.007-4.243l-1.59-1.59" />
@@ -57,7 +59,7 @@
                                     </div>
                                 </a>
       
-                                <a href="/routesCreator" class="-m-3 flex items-start rounded-lg p-3 hover:bg-gray-50">
+                                <a href="/templates/routesCreator.html" class="-m-3 flex items-start rounded-lg p-3 hover:bg-gray-50">
                                     
                                     <svg class="h-6 w-6 flex-shrink-0 text-red-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true">
                                         <path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99" />
@@ -72,8 +74,8 @@
                     </div>
                 </div>
       
-              <a href="#" class="text-base font-medium text-gray-500 hover:text-gray-900">Conversation</a>
-              <a href="#" class="text-base font-medium text-gray-500 hover:text-gray-900">Docs</a>
+              <a href="/templates/chatBot.html" class="text-base font-medium text-gray-500 hover:text-gray-900">Conversation</a>
+              <a href="/templates/docsPage.html" class="text-base font-medium text-gray-500 hover:text-gray-900">Docs</a>
       
               <div class="relative">
                 <button type="button" class="text-gray-500 group inline-flex items-center rounded-md bg-white text-base font-medium hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2" aria-expanded="false">
@@ -82,7 +84,7 @@
                     <path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clip-rule="evenodd" />
                   </svg>
                 </button>
-                <div class="absolute left-1/2 z-10 mt-3 w-screen max-w-md -translate-x-1/2 transform px-2 sm:px-0">
+                <div class="hidden absolute left-1/2 z-10 mt-3 w-screen max-w-md -translate-x-1/2 transform px-2 sm:px-0">
                   <div class="overflow-hidden rounded-lg shadow-lg ring-1 ring-black ring-opacity-5">
                     <div class="relative grid gap-6 bg-white px-5 py-6 sm:gap-8 sm:p-8">
                       <a href="https://github.com/UniCT-ARSLab/PepperGateway" class="-m-3 flex items-start rounded-lg p-3 hover:bg-gray-50">
@@ -96,7 +98,7 @@
                         </div>
                       </a>
       
-                      <a href="/infoPage.html" class="-m-3 flex items-start rounded-lg p-3 hover:bg-gray-50">
+                      <a href="/templates/infoPage.html" class="-m-3 flex items-start rounded-lg p-3 hover:bg-gray-50">
                         
                         <svg class="h-6 w-6 flex-shrink-0 text-red-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true">
                           <path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5" />
@@ -133,9 +135,9 @@
                     </div>
                     <div class="space-y-6 py-6 px-5">
                         <div class="grid grid-cols-2 gap-y-4 gap-x-8">
-                            <a href="#" class="text-base font-medium text-gray-900 hover:text-red-700">Homepage</a>
                             <a href="#" class="text-base font-medium text-gray-900 hover:text-red-700">Movement</a>
                             <a href="#" class="text-base font-medium text-gray-900 hover:text-red-700">Conversation</a>
+                            <a href="#" class="text-base font-medium text-gray-900 hover:text-red-700">Docs</a>
                             <a href="#" class="text-base font-medium text-gray-900 hover:text-red-700">Info</a>
                         </div>
                     </div>
@@ -143,57 +145,37 @@
             </div>
         </div>
     </div>
-
-    <div class="isolate bg-white">
-        <div class="absolute inset-x-0 top-[-10rem] -z-10 transform-gpu overflow-hidden blur-3xl sm:top-[-20rem]">
-            <svg class="relative left-[calc(50%-11rem)] -z-10 h-[21.1875rem] max-w-none -translate-x-1/2 rotate-[30deg] sm:left-[calc(50%-30rem)] sm:h-[42.375rem]" viewBox="0 0 1155 678" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path fill="url(#45de2b6b-92d5-4d68-a6a0-9b9b2abad533)" fill-opacity=".3" d="M317.219 518.975L203.852 678 0 438.341l317.219 80.634 204.172-286.402c1.307 132.337 45.083 346.658 209.733 145.248C936.936 126.058 882.053-94.234 1031.02 41.331c119.18 108.451 130.68 295.337 121.53 375.223L855 299l21.173 362.054-558.954-142.079z" />
-                <defs>
-                    <linearGradient id="45de2b6b-92d5-4d68-a6a0-9b9b2abad533" x1="1155.49" x2="-78.208" y1=".177" y2="474.645" gradientUnits="userSpaceOnUse">
-                        <stop stop-color="#9089FC"></stop>
-                        <stop offset="1" stop-color="#FF80B5"></stop>
-                    </linearGradient>
-                </defs>
-            </svg>
+    <div class="mx-auto max-w-7xl px-6 lg:px-8">
+        <div class="sm:text-center">
+            <h2 class="text-lg font-semibold leading-8 text-white">Environment</h2>
+            <p class="mt-2 text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl">Move your Pepper, now.</p>
+            <p class="mx-auto mt-6 max-w-2xl text-sm font-text leading-8 text-gray-200">Lorem ipsum dolor sit amet consect adipisicing elit. Possimus magnam voluptatum cupiditate veritatis in accusamus quisquam.</p>
         </div>
-
-        <main>
-            <div class="relative px-6 lg:px-8">
-                <div class="mx-auto max-w-3xl pt-20 pb-32 sm:pt-48 sm:pb-40">
-                    <div>
-                        <!-- <div class="hidden sm:mb-8 sm:flex sm:justify-center">
-                            <div class="relative overflow-hidden rounded-full py-1.5 px-4 text-sm leading-6 ring-1 ring-gray-900/10 hover:ring-gray-900/20">
-                                <span class="text-gray-600">
-                                    Announcing our next round of funding. <a href="#" class="font-semibold text-red-600"><span class="absolute inset-0" aria-hidden="true"></span>Read more <span aria-hidden="true">&rarr;</span></a>
-                                </span>
-                            </div>
-                        </div> -->
-                        <div>
-                            <h1 class="text-4xl font-bold tracking-tight sm:text-center sm:text-6xl">Robotica Progrediens</h1>
-                            <p class="mt-6 text-lg leading-8 text-gray-600 sm:text-center">Robotica Progrediens is a Gateway to Pepper Robot, the project for my BsC Degree. <br> Now, user can establish a point of contact between him and the robot itself, order movements and/or information, or more generally request tasks.</p>
-                            <div class="mt-8 flex gap-x-4 sm:justify-center">
-                                <a href="#" class="inline-block rounded-lg bg-red-600 px-4 py-1.5 text-base font-semibold leading-7 text-white shadow-sm ring-1 ring-red-600 hover:bg-red-700 hover:ring-red-700">
-                                    Watch Demo
-                                    <span class="text-red-200" aria-hidden="true">&rarr;</span>
-                                </a>
-                            </div>
-                        </div>
-                        <div class="absolute inset-x-0 top-[calc(100%-13rem)] -z-10 transform-gpu overflow-hidden blur-3xl sm:top-[calc(100%-30rem)]">
-                            <svg class="relative left-[calc(50%+3rem)] h-[21.1875rem] max-w-none -translate-x-1/2 sm:left-[calc(50%+36rem)] sm:h-[42.375rem]" viewBox="0 0 1155 678" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                <path fill="url(#ecb5b0c9-546c-4772-8c71-4d3f06d544bc)" fill-opacity=".3" d="M317.219 518.975L203.852 678 0 438.341l317.219 80.634 204.172-286.402c1.307 132.337 45.083 346.658 209.733 145.248C936.936 126.058 882.053-94.234 1031.02 41.331c119.18 108.451 130.68 295.337 121.53 375.223L855 299l21.173 362.054-558.954-142.079z" />
-                                <defs>
-                                    <linearGradient id="ecb5b0c9-546c-4772-8c71-4d3f06d544bc" x1="1155.49" x2="-78.208" y1=".177" y2="474.645" gradientUnits="userSpaceOnUse">
-                                        <stop stop-color="#9089FC"></stop>
-                                        <stop offset="1" stop-color="#FF80B5"></stop>
-                                    </linearGradient>
-                                </defs>
-                            </svg>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </main>
     </div>
-    <script src="/static/js/indexScript.js"></script>
+    <div class="grid grid-cols-2 gap-4 place-content-center place-items-center h-128">
+        <div><p class="text-lg font-semibold leading-8 text-gray-900">Move Forward</p></div>
+        <div><p class="text-lg font-semibold leading-8 text-gray-900 my-12">Rotation</p></div>
+        <div id="static-forward" class="relative bg-blue-100 w-64 h-64 rounded-full"></div>
+        <div id="static-rotate" class="relative bg-blue-100 w-64 h-64 rounded-full"></div>
+    </div>
+
+	<div id="zone_joystick">
+		<div id="debug">
+			<ul>
+				<li class="position">
+					position :
+					<ul>
+						<li class="x">x : <span class='data'></span></li>
+						<li class="y">y : <span class='data'></span></li>
+					</ul>
+				</li>
+				<li class="force">force : <span class='data'></span></li>
+				<li class="pressure">pressure : <span class='data'></span></li>
+				<li class="distance">distance : <span class='data'></span></li>
+			</ul>
+		<div class="dump"></div>
+	</div>
+    <script type="text/javascript" src="/static/js/indexScript.js"></script>
+	<script type="text/javascript" src="/static/js/joypadScript.js"></script>
 </body>
 </html>
