@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+    <meta http-equiv="Pragma" content="no-cache" />
+    <meta http-equiv="Expires" content="0" />
+    <title>Index</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.1/css/all.min.css" integrity="sha512-MV7K8+y+gLIBoVD59lQIYicR65iaqukzvf/nwasF0nqhPay5w/9lJmVM2hMDcnK1OnMGCdVK+iQrJ7lzPJQd1w==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <div class="logo">
+        <img src="{{ url_for('static', filename='img/logo.png') }}" alt="logo" width="250px">
+    </div>
+    <div>
+        <ul class="menu">
+            <li class="menu-items items-left"><a class="menu-items active" href="/">Home</a></li>
+            <li class="menu-items items-left"><a class="menu-items" href="/environment">Environment</a></li>
+            <li class="menu-items items-right"><a class="menu-items" href="/say">Contact</a></li>
+            <li class="menu-items items-right"><a class="menu-items" href="/settings">Settings</a></li>
+        </ul>
+    </div>
+
+
+    <!-- <form action="/awareness_on" method="post" class="">
+        <button class="" type="submit">Abilita Awareness</button>
+    </form>
+    <form action="/awareness_off" method="post" class="">
+        <button class="" type="submit">Disabilita Awareness</button>
+    </form> -->
+    
+    <form action="/add" method="post" class="add-form-container">
+        <div class="login_bar">
+            <input type="text" name="target_name" class="login" id="target_name" placeholder="Inserisci un nome per il punto...">
+            <button class="subscribe_button" onclick="subscribeOnClick()" type="submit">Aggiungi</button>
+            <span class="subscribing"></span>
+            <span class="thanks">Hai aggiunto un nuovo punto alla mappa!</span>
+        </div>
+    </form>
+
+    <!-- FIX: CENTER TABLE -->
+
+    <section class="">
+        <div class="container">
+            <table>
+                <thead>
+                    <tr class="header">
+                        <th>
+                            Nome
+                            <div>Nome</div>
+                        </th>
+                        <th>
+                            <!-- Go to point -->
+                            <div></div>
+                        </th>
+                        <th>
+                            <!-- Delete point -->
+                            <div></div>
+                        </th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for target in targetList %}
+                    <tr class="target-table-items">
+                        <td>{{ target.text }}</td>
+                        <td><a href="/get/{{ target.id }}"><i class="fa-solid fa-hand-point-up"></i></a></td>
+                        <td><a href="/delete/{{ target.id }}"><i class="fa-solid fa-trash"></i></a></td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+    <script type="text/javascript" src="{{ url_for('static', filename='js/script.js') }}"></script>
+</body>
+</html>
