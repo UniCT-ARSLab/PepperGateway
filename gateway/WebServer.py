@@ -3,12 +3,17 @@ from flask_sqlalchemy import SQLAlchemy
 from robot import *
 import config
 import time
-from time import sleep
+import json
+from geventwebsocket import WebSocketApplication, WebSocketServer, Resource
+from geventwebsocket.handler import WebSocketHandler
+from gevent import pywsgi
+from gevent.pywsgi import WSGIHandler
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///tmp/db.sqlite'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
+pepper = None
 
 class Target(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -17,21 +22,49 @@ class Target(db.Model):
     y = db.Column(db.Integer)
     theta = db.Column(db.Integer)
 
+class WebSocketCommunication(WebSocketApplication):
+
+    def on_open(self):
+        print("Client connected!")
+
+    def on_message(self, message):
+        global pepper
+        if message is None:
+            return
+        message = json.loads(message)
+        if pepper:
+            if message['msg_type'] == 'move_forward':
+                print("linear_vel", message['data'])
+                pepper.move_forward(message['data'])
+            elif message['msg_type'] == 'rotate':
+                print("angular_vel",message['data'])
+                pepper.turn_around(message['data'])
+
+    def on_close(self, reason):
+        print("Connection closed!")
+
+
 class WebServer:
     def __init__(self, robot = None):
+        global pepper
+        pepper = robot
         self.robot = robot    
         self.defineRoutes()
         self.startServer()
 
-    # def __init__(self):   
-    #     self.defineRoutes()
-    #     self.startServer()
-
     def startServer(self):
         app.app_context().push()
         db.create_all()
-        app.run(debug=True, host='0.0.0.0', port=5000)
-
+        WebSocketServer(
+            ('0.0.0.0', 5000),
+            Resource([
+                ('^/ws', WebSocketCommunication),
+                ('^/.*', app)
+            ]),
+            debug=False
+        ).serve_forever()
+        # app.run(debug=True, host='0.0.0.0', port=5000)
+        
     def defineRoutes(self):
         @app.route('/')
         def index():
@@ -83,18 +116,6 @@ class WebServer:
             self.robot.say(request.form.get('text'))
             return redirect(url_for('index'))
         
-        @app.route('/rotate', methods=['POST'])
-        def rotate():
-            print("Test passed!")
-            # self.robot.say(request.form.get('data'))
-            # self.robot.turn_around(request.form.get('data'))
-            return redirect(url_for('environment'))
-
-        @app.route('/move', methods=['POST'])
-        def move():
-            print(request.form.get('data'))
-            return redirect(url_for('environment'))
-            # self.robot.move_forward(request.form.get('data'))
     
 
     

@@ -8,8 +8,8 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.5.4/socket.io.min.js" integrity="sha512-HTENHrkQ/P0NGDFd5nk6ibVtCkcM7jhr2c7GyvXp5O+4X6O5cQO9AhqFzM+MdeBivsX7Hoys2J7pp2wdgMpCvw==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/nipplejs/0.10.0/nipplejs.js" integrity="sha512-+51ykZ6kGNAEm+QvXP+iadxWg3XZGTD9I1GLhJILv9gvTzHdmwik3xKjZ4ieYn8Oua0+3NGIwWwDHMl6kR4ufQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/network-js/2.1.0/network.min.js" integrity="sha512-Py5RJUQ8xXl07uE5eulmHrpZgAPQpXwNouXj7TrwKe8+kVR3pdkRSso45o+j1iRyDZhTSsPB0dTSJgiori1vXw==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
     <!-- <link rel="stylesheet" href="/static/css/style.css"> -->
-    <script type="text/javascript" src="/static/js/script.js"></script>
 </head>
 <body>
     <div class="relative bg-white">
@@ -149,7 +149,7 @@
         <div class="sm:text-center">
             <h2 class="text-lg font-semibold leading-8 text-white">Environment</h2>
             <p class="mt-2 text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl">Move your Pepper, now.</p>
-            <p class="mx-auto mt-6 max-w-2xl text-sm font-text leading-8 text-gray-200">Lorem ipsum dolor sit amet consect adipisicing elit. Possimus magnam voluptatum cupiditate veritatis in accusamus quisquam.</p>
+            <p class="mt-6 text-md leading-8 text-gray-600 sm:text-center">Lorem ipsum dolor sit amet consect adipisicing elit. Possimus magnam voluptatum cupiditate veritatis in accusamus quisquam.</p>
         </div>
     </div>
     <div class="grid grid-cols-2 gap-4 place-content-center place-items-center h-128">
@@ -159,23 +159,13 @@
         <div id="static-rotate" class="relative bg-blue-100 w-64 h-64 rounded-full"></div>
     </div>
 
-	<div id="zone_joystick">
-		<div id="debug">
-			<ul>
-				<li class="position">
-					position :
-					<ul>
-						<li class="x">x : <span class='data'></span></li>
-						<li class="y">y : <span class='data'></span></li>
-					</ul>
-				</li>
-				<li class="force">force : <span class='data'></span></li>
-				<li class="pressure">pressure : <span class='data'></span></li>
-				<li class="distance">distance : <span class='data'></span></li>
-			</ul>
-		<div class="dump"></div>
-	</div>
-    <script type="text/javascript" src="/static/js/indexScript.js"></script>
-	<script type="text/javascript" src="/static/js/joypadScript.js"></script>
+    <div class="mt-8 flex gap-x-4 sm:justify-center">
+        <a href="#" class="inline-block rounded-lg bg-blue-100 px-4 py-1.5 text-base font-semibold leading-7 text-white shadow-sm hover:bg-blue-200">
+            Exploration Mode
+            <span class="text-blue-200" aria-hidden="true">&rarr;</span>
+        </a>
+    </div>
+
+    <script type="text/javascript" src="{{ url_for('static', filename='js/joypadMode.js') }}"></script>
 </body>
 </html>

@@ -12,3 +12,5 @@ inputs
 SpeechRecognition
 Flask
 flask_sqlalchemy
+gevent
+gevent-websocket

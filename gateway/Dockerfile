@@ -17,8 +17,10 @@ RUN pip install -r requirements.txt
 
 EXPOSE 6566
 EXPOSE 5000
+EXPOSE 8008
 
-CMD [ "python", "main.py" ]
+# CMD [ "python", "main.py" ]
+CMD [ "python", "main.py"]
 # CMD ["python", "-m", "app.py"]
 # CMD ["flask", "run" ]
 
