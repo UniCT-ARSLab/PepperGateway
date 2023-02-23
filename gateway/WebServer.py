@@ -39,6 +39,9 @@ class WebSocketCommunication(WebSocketApplication):
             elif message['msg_type'] == 'rotate':
                 print("angular_vel",message['data'])
                 pepper.turn_around(message['data'])
+            # elif message['msg_type'] == 'stream':
+            #     pepper.subscribe_camera("camera_top", 1, 15)
+            #     return pepper.get_camera_frame(True)
 
     def on_close(self, reason):
         print("Connection closed!")
@@ -81,6 +84,10 @@ class WebServer:
         def joypadMode():
             return render_template('joypadMode.html')
 
+        @app.route('/settingsPage')
+        def settingsPage():
+            return render_template('settingsPage.html')
+
         @app.route('/add', methods=['POST'])
         def add():
             target_name = request.form.get('target_name')
@@ -111,11 +118,15 @@ class WebServer:
             # self.robot.navigate_to(item.x, item.y, item.theta)
             return redirect(url_for('pointsOfInterest'))
 
-        @app.route('/say', methods=['POST'])
-        def say():
-            self.robot.say(request.form.get('text'))
-            return redirect(url_for('index'))
+        @app.route('/getMap', methods=['GET'])
+        def getMap():
+            self.robot.exploration_mode(10)
+            self.robot.show_map()
+            return
         
+        @app.route('/getBattery', methods=['GET'])
+        def getBattery():
+            return self.robot.battery_status()
     
 
     

@@ -73,12 +73,11 @@ class Pepper:
         # It contains all saved point of interests
         self.point_of_interests = {}
 
-        # self.recognizer = speech_recognition.Recognizer()
-        # self.set_language("Italian") To fix!!!
-
-        #self.autonomous_life_on()
-
         print("[INFO]: Robot is initialized at " + ip_address + ":" + str(port))
+        self.set_security_distance(0.01)
+        self.autonomous_life_service.setState("disabled")
+        self.motion_service.wakeUp()
+        # self.say("Il robot e' pronto")
 
     def point_at(self, x, y, z, effector_name, frame):
         """
@@ -111,6 +110,15 @@ class Pepper:
         """
         self.motion_service.move(speed, 0, 0)
 
+    def move_toward(self, x, y, theta):
+        """
+        Move forward with certain speed
+
+        :param speed: Positive values forward, negative backwards
+        :type speed: float
+        """
+        self.motion_service.moveToward(x, y, theta)
+
     def turn_around(self, speed):
         """
         Turn around its axis
@@ -123,6 +131,37 @@ class Pepper:
     def stop_moving(self):
         """Stop robot from moving by `move_around` and `turn_around` methods"""
         self.motion_service.stopMove()
+
+# ------------------------------------------
+
+    # def start_stream(self):
+    #     self.subscribe_camera(self.get_picked_camera(), 0, 30)
+    #     #self.thread_alive = True
+    #     while not self._stop_event.is_set():
+    #         #print(self.thread_alive)
+    #         if not self.stream_on == 1:
+    #             self._stop_event.wait(1)
+    #             continue
+    #         image = self.robot.get_camera_frame(show=False)
+    #         image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+    #         image = cv2.resize(image, (320, 240))
+    #         im = Image.fromarray(image)
+    #         #name = "camera.jpg"
+    #         #im.save(name)
+
+    # def on_start_stream_clicked(self):
+    #     self.output_text("[INFO]: Starting camera stream.")
+    #     if self.stream_on == -1:
+    #         self.stream_on = 1
+    #         self.video_thread.start()
+    #     else:
+    #         self.stream_on = 1
+
+    # def on_stop_stream_clicked(self):
+    #     self.output_text("[INFO]: Stopping camera stream.")
+    #     self.stream_on = 0
+
+# ------------------------------------------
 
     def say(self, text):
         """
@@ -238,8 +277,8 @@ class Pepper:
         if on_robot:
             # TODO: It requires a HTTPS server running. This should be somehow automated.
             cv2.imwrite("./tmp/map.png", robot_map)
-            self.tablet_show_web(remote_ip + ":8000/map.png")
-            print("[INFO]: Map is available at: " + str(remote_ip) + ":8000/map.png")
+            # self.tablet_show_web(remote_ip + ":8000/map.png")
+            # print("[INFO]: Map is available at: " + str(remote_ip) + ":8000/map.png")
         else:
             map_name = "map.png"
             cv2.imwrite(map_name, robot_map)
@@ -262,7 +301,6 @@ class Pepper:
         :type speed: float
         """
         self.motion_service.move(0, 0, speed)
-
 
     def setup_point(self, name):
         """
@@ -388,7 +426,6 @@ class Pepper:
 
         self.slam_map = img
 
-
     def load_map(self, file_name, file_path="/home/nao/.local/share/Explorer/"):
         """
         Load stored map on a robot. It will find a map in default location,
@@ -419,7 +456,8 @@ class Pepper:
     def battery_status(self):
         """Say a battery status"""
         battery = self.battery_service.getBatteryCharge()
-        self.say("I have " + str(battery) + " percent of battery")
+        # self.say("I have " + str(battery) + " percent of battery")
+        return str(battery)
 
     def set_awareness(self, state):
         """

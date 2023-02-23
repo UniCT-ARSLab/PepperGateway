@@ -4,41 +4,84 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.5.4/socket.io.min.js" integrity="sha512-HTENHrkQ/P0NGDFd5nk6ibVtCkcM7jhr2c7GyvXp5O+4X6O5cQO9AhqFzM+MdeBivsX7Hoys2J7pp2wdgMpCvw==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/nipplejs/0.10.0/nipplejs.js" integrity="sha512-+51ykZ6kGNAEm+QvXP+iadxWg3XZGTD9I1GLhJILv9gvTzHdmwik3xKjZ4ieYn8Oua0+3NGIwWwDHMl6kR4ufQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/network-js/2.1.0/network.min.js" integrity="sha512-Py5RJUQ8xXl07uE5eulmHrpZgAPQpXwNouXj7TrwKe8+kVR3pdkRSso45o+j1iRyDZhTSsPB0dTSJgiori1vXw==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-    <!-- <link rel="stylesheet" href="/static/css/style.css"> -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/1.2.3/axios.min.js" integrity="sha512-L4lHq2JI/GoKsERT8KYa72iCwfSrKYWEyaBxzJeeITM9Lub5vlTj8tufqYk056exhjo2QDEipJrg6zen/DDtoQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <title>Document</title>
 </head>
 <body>
+    <div class="relative z-10" role="dialog" aria-modal="true" id="m-0">
+        <div class="fixed inset-0 hidden bg-gray-500 bg-opacity-75 transition-opacity md:block"></div>
+        <div class="fixed inset-0 z-10 overflow-y-auto">
+            <div class="flex min-h-full items-stretch justify-center text-center md:items-center md:px-2 lg:px-4">
+                <div class="flex w-full transform text-left text-base transition md:my-8 md:max-w-2xl md:px-4 lg:max-w-4xl">
+                    <div class="relative flex w-full items-center overflow-hidden bg-white px-4 pt-14 pb-8 shadow-2xl sm:px-6 sm:pt-8 md:p-6 lg:p-8 rounded-lg">
+                        <button type="button" class="absolute top-4 right-4 text-gray-400 hover:text-gray-500 sm:top-8 sm:right-6 md:top-6 md:right-6 lg:top-8 lg:right-8" onclick="showMenu('m-0')">
+                            <span class="sr-only">Close</span>
+                            <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                        </button>
+                        <div class="grid w-full grid-cols-1 items-start gap-y-8 gap-x-6 sm:grid-cols-12 lg:gap-x-8">
+                            <div class="aspect-w-2 aspect-h-3 overflow-hidden rounded-lg bg-gray-100 sm:col-span-4 lg:col-span-5">
+                                <img src="/Gateway/map.png" alt="Two each of gray, white, and black shirts arranged on table." class="object-cover object-center">
+                            </div>
+                            <div class="sm:col-span-8 lg:col-span-7">
+                                <h2 class="text-2xl font-bold text-gray-900 sm:pr-12">Metrical Map</h2>
+                                <section aria-labelledby="options-heading" class="mt-4">
+                                    <div>
+                                        <div class="mt-2">
+                                            <div class="flex items-center justify-between">
+                                                <h4 class="text-sm font-medium text-gray-900">Spiegazione</h4>
+                                            </div>
+                                        </div>
+                                        <h5 class="text-sm text-gray-800">
+                                            Questa è la mappa tracciata dal robot. Il punto in rosso è il robot stesso all'interno della mappa.
+                                            Una volta tracciata la mappa è possibile salvare dei punti di interesse all'interno della mappa stessa,
+                                            raggiungibili successivamente ed in autonomia da parte del robot.
+                                        </h4>
+                                        <div class="mt-2">
+                                            <div class="flex items-center justify-between">
+                                                <h4 class="text-sm font-medium text-gray-900">Tips</h4>
+                                            </div>
+                                        </div>
+                                        <h5 class="text-sm text-gray-800">
+                                            La mappa tracciata dal robot possiede un raggio predefinito di dieci metri, un valore che può essere modificato all'interno della pagina <i>Settings</i>.<br> Per tracciare una nuova mappa è sufficiente avviare nuovamente <i>Exploration Mode</i>.<br>
+                                            Si noti che l'ultima mappa tracciata è quella che viene caricata all'avvio all'interno del robot.
+                                        </h4>
+                                    </div>
+                                </section>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
     <div class="relative bg-white">
         <div class="mx-auto max-w-7xl px-6">
             <div class="flex items-center justify-between border-b-2 border-gray-100 py-6 md:justify-start md:space-x-10">
                 <div class="flex justify-start lg:w-0 lg:flex-1"></div>
                 <div class="-my-2 -mr-2 md:hidden">
-                    <!-- <button type="button" class="inline-flex items-center justify-center rounded-md bg-white p-2 text-gray-400 hover:bg-gray-100 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-red-500" aria-expanded="false">
+                    <button type="button" class="inline-flex items-center justify-center rounded-md bg-white p-2 text-gray-400 hover:bg-gray-100 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-red-500" aria-expanded="false">
                         <span class="sr-only">Open menu</span>
-                        
-                        <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true">
+                        <!-- <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
-                        </svg>
-                    </button> -->
+                        </svg> -->
+                    </button>
                 </div>
             <nav class="space-x-10 md:flex">
-                <div class="relative">
-                    
-                    <button type="button" class="cursor-pointer text-gray-500 group inline-flex items-center rounded-md bg-white text-base font-medium hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2" aria-expanded="true" onclick="showMenu(this)">
+                <div class="relative" onclick="showMenu('m-1')">
+                    <button type="button" class="text-gray-500 group inline-flex items-center rounded-md bg-white text-base font-medium hover:text-gray-900 focus:outline-none" aria-expanded="false">
                         <span>Movement</span>
                         <svg class="text-gray-400 ml-2 h-5 w-5 group-hover:text-gray-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
                             <path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clip-rule="evenodd" />
                         </svg>
                     </button>
-                    <div id="movementDropdown" onclick="showMenu(this)" class="absolute z-10 -ml-4 mt-3 w-screen max-w-md transform px-2 sm:px-0 lg:left-1/2 lg:ml-0 lg:-translate-x-1/2">
-                        <div class="hidden overflow-hidden rounded-lg shadow-lg ring-1 ring-black ring-opacity-5">
+                    <div class="hidden absolute z-10 -ml-4 mt-3 w-screen max-w-md transform px-2 sm:px-0 lg:left-1/2 lg:ml-0 lg:-translate-x-1/2" id="m-1">
+                        <div class="overflow-hidden rounded-lg shadow-lg ring-1 ring-black ring-opacity-5">
                             <div class="relative grid gap-6 bg-white px-5 py-6 sm:gap-8 sm:p-8">
-                                <a href="/templates/joypadMode.html" class="-m-3 flex items-start rounded-lg p-3 hover:bg-gray-50">
-                                
+                                <a href="/joypadMode" class="-m-3 flex items-start rounded-lg p-3 hover:bg-gray-50">
                                     <svg class="h-6 w-6 flex-shrink-0 text-red-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true">
                                         <path stroke-linecap="round" stroke-linejoin="round" d="M15.042 21.672L13.684 16.6m0 0l-2.51 2.225.569-9.47 5.227 7.917-3.286-.672zM12 2.25V4.5m5.834.166l-1.591 1.591M20.25 10.5H18M7.757 14.743l-1.59 1.59M6 10.5H3.75m4.007-4.243l-1.59-1.59" />
                                     </svg>
@@ -49,7 +92,6 @@
                                 </a>
       
                                 <a href="/pointsOfInterest" class="-m-3 flex items-start rounded-lg p-3 hover:bg-gray-50">
-                                    
                                     <svg class="h-6 w-6 flex-shrink-0 text-red-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true">
                                         <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6A2.25 2.25 0 016 3.75h2.25A2.25 2.25 0 0110.5 6v2.25a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25V6zM3.75 15.75A2.25 2.25 0 016 13.5h2.25a2.25 2.25 0 012.25 2.25V18a2.25 2.25 0 01-2.25 2.25H6A2.25 2.25 0 013.75 18v-2.25zM13.5 6a2.25 2.25 0 012.25-2.25H18A2.25 2.25 0 0120.25 6v2.25A2.25 2.25 0 0118 10.5h-2.25a2.25 2.25 0 01-2.25-2.25V6zM13.5 15.75a2.25 2.25 0 012.25-2.25H18a2.25 2.25 0 012.25 2.25V18A2.25 2.25 0 0118 20.25h-2.25A2.25 2.25 0 0113.5 18v-2.25z" />
                                     </svg>
@@ -59,7 +101,7 @@
                                     </div>
                                 </a>
       
-                                <a href="/templates/routesCreator.html" class="-m-3 flex items-start rounded-lg p-3 hover:bg-gray-50">
+                                <a href="/routesCreator" class="-m-3 flex items-start rounded-lg p-3 hover:bg-gray-50">
                                     
                                     <svg class="h-6 w-6 flex-shrink-0 text-red-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true">
                                         <path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99" />
@@ -74,17 +116,17 @@
                     </div>
                 </div>
       
-              <a href="/templates/chatBot.html" class="text-base font-medium text-gray-500 hover:text-gray-900">Conversation</a>
-              <a href="/templates/docsPage.html" class="text-base font-medium text-gray-500 hover:text-gray-900">Docs</a>
+              <a href="#" class="text-base font-medium text-gray-500 hover:text-gray-900">Conversation</a>
+              <a href="#" class="text-base font-medium text-gray-500 hover:text-gray-900">Docs</a>
       
-              <div class="relative">
-                <button type="button" class="text-gray-500 group inline-flex items-center rounded-md bg-white text-base font-medium hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2" aria-expanded="false">
+              <div class="relative" onclick="showMenu('m-2')">
+                <button type="button" class="text-gray-500 group inline-flex items-center rounded-md bg-white text-base font-medium hover:text-gray-900 focus:outline-none" aria-expanded="false">
                   <span>More</span>
                   <svg class="text-gray-400 ml-2 h-5 w-5 group-hover:text-gray-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
                     <path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clip-rule="evenodd" />
                   </svg>
                 </button>
-                <div class="hidden absolute left-1/2 z-10 mt-3 w-screen max-w-md -translate-x-1/2 transform px-2 sm:px-0">
+                <div class="hidden absolute left-1/2 z-10 mt-3 w-screen max-w-md -translate-x-1/2 transform px-2 sm:px-0" id="m-2">
                   <div class="overflow-hidden rounded-lg shadow-lg ring-1 ring-black ring-opacity-5">
                     <div class="relative grid gap-6 bg-white px-5 py-6 sm:gap-8 sm:p-8">
                       <a href="https://github.com/UniCT-ARSLab/PepperGateway" class="-m-3 flex items-start rounded-lg p-3 hover:bg-gray-50">
@@ -98,14 +140,14 @@
                         </div>
                       </a>
       
-                      <a href="/templates/infoPage.html" class="-m-3 flex items-start rounded-lg p-3 hover:bg-gray-50">
+                      <a href="/settingsPage" class="-m-3 flex items-start rounded-lg p-3 hover:bg-gray-50">
                         
                         <svg class="h-6 w-6 flex-shrink-0 text-red-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true">
                           <path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5" />
                         </svg>
                         <div class="ml-4">
-                          <p class="text-base font-medium text-gray-900">Info</p>
-                          <p class="mt-1 text-sm text-gray-500">All information about this project.</p>
+                          <p class="text-base font-medium text-gray-900">Settings</p>
+                          <p class="mt-1 text-sm text-gray-500">All settings about this robot.</p>
                         </div>
                       </a>
                     </div>
@@ -135,9 +177,9 @@
                     </div>
                     <div class="space-y-6 py-6 px-5">
                         <div class="grid grid-cols-2 gap-y-4 gap-x-8">
+                            <a href="#" class="text-base font-medium text-gray-900 hover:text-red-700">Homepage</a>
                             <a href="#" class="text-base font-medium text-gray-900 hover:text-red-700">Movement</a>
                             <a href="#" class="text-base font-medium text-gray-900 hover:text-red-700">Conversation</a>
-                            <a href="#" class="text-base font-medium text-gray-900 hover:text-red-700">Docs</a>
                             <a href="#" class="text-base font-medium text-gray-900 hover:text-red-700">Info</a>
                         </div>
                     </div>
@@ -160,12 +202,25 @@
     </div>
 
     <div class="mt-8 flex gap-x-4 sm:justify-center">
-        <a href="#" class="inline-block rounded-lg bg-blue-100 px-4 py-1.5 text-base font-semibold leading-7 text-white shadow-sm hover:bg-blue-200">
+        <a href="/getMap" class="inline-block rounded-lg bg-blue-100 px-5 py-1.5 text-base font-semibold leading-7 text-white shadow-sm hover:bg-blue-200" onclick="startStream('start', 'stream')">
             Exploration Mode
             <span class="text-blue-200" aria-hidden="true">&rarr;</span>
         </a>
     </div>
+    <div class="mt-8 flex gap-x-4 sm:justify-center">
+        <a href="/loadMap" class="inline-block rounded-lg bg-blue-100 px-12 py-1 text-base font-semibold leading-7 text-white shadow-sm hover:bg-blue-200" onclick="startStream('start', 'stream')">
+            Load Map
+            <span class="text-blue-200" aria-hidden="true">&rarr;</span>
+        </a>
+    </div>
+    <!-- <div class="object-contain content-center mx-auto h-48 w-96" id="frame"></div> -->
 
     <script type="text/javascript" src="{{ url_for('static', filename='js/joypadMode.js') }}"></script>
+    <script>
+        function showMenu(id) {
+            const menu = document.getElementById(id);
+            menu.classList.toggle("hidden");
+        }
+    </script>
 </body>
 </html>
