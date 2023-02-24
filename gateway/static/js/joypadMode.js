@@ -40,7 +40,7 @@ function bindNipple() {
         if (data["direction"]) {
             const direction = data["direction"];
             const value = (direction["y"] == "down" || direction["x"] == "right") ? -data["distance"] : data["distance"];
-            const normalised = scale(value, -50, 50, -0.2, 0.2);
+            const normalised = scale(value, -50, 50, -0.5, 0.5);
             const msg_type = direction["y"] === undefined ? "rotate" : "move_forward";
 
             doSend(normalised, msg_type);

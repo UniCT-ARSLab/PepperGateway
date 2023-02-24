@@ -120,9 +120,9 @@ class WebServer:
 
         @app.route('/getMap', methods=['GET'])
         def getMap():
-            self.robot.exploration_mode(10)
+            self.robot.exploration_mode(3)
             self.robot.show_map()
-            return
+            return "OK"
         
         @app.route('/getBattery', methods=['GET'])
         def getBattery():

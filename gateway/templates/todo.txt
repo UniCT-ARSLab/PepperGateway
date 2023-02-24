@@ -1,5 +1,8 @@
 Inserire due nuovi joypad per il movimento della braccia.
 Rimuovere button per il caricamento della mappa, il quale deve avvenire automaticamente all'avvio e dopo exploration mode.
-Modificare metodo tracciamento mappa affinché salvi la mappa sempre con nome latest.jpg, in questo modo la mappa viene sovrascritta ad ogni exploration mode.
 Caricare all'avvio mappa latest.jpg
-Capire come mostrare mappa dopo exploration mode.
+Capire come mostrare mappa dopo exploration mode. Tips: chiamata bloccante?
+Salvare permanentemente il path dell'ultima mappa tracciata.
+
+Cambiare colore percentuale batteria e scegliere un colore in base al range di valori. FATTO
+Cambiato riga 279, 284 su robot.py, in questo modo il file viene salvato con il nome latest.jpg FATTO

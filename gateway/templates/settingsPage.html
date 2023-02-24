@@ -170,7 +170,7 @@
                     </fieldset>
                 </div>
                 <div class="mt-8 flex gap-x-4 sm:justify-center">
-                    <div class="inline-block rounded-lg bg-red-100 px-12 py-1 text-base font-semibold leading-7 text-white shadow-sm" id="battery"></div>
+                    <div class="inline-block rounded-lg px-12 py-1 text-base font-semibold leading-7 text-white shadow-sm" id="battery"></div>
                 </div>
             </div>
         </div>
@@ -188,9 +188,17 @@
         //     console.log(response.text);
         //     return response.text();
         // }
-        fetch('/getBattery').then(data => data.text()).then(data => document.getElementById('battery').innerHTML = data + '%');
-        // document.getElementById(battery).innerHTML = 
-
+        fetch('/getBattery')
+            .then(data => data.text())
+            .then(data => document.getElementById('battery').innerHTML = data);
+        const item = document.getElementById('battery');
+        if (item >= '60') {
+            item.classList.add('bg-green-100');
+        } else if (item.innerHTML < 60 && item.innerHTML > 30) {
+            item.classList.add('bg-yellow-100');
+        } else {
+            item.classList.add('bg-red-100');
+        }
     </script>
 </body>
 </html>

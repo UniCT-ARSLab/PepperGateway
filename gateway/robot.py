@@ -75,8 +75,8 @@ class Pepper:
 
         print("[INFO]: Robot is initialized at " + ip_address + ":" + str(port))
         self.set_security_distance(0.01)
-        self.autonomous_life_service.setState("disabled")
-        self.motion_service.wakeUp()
+        # self.autonomous_life_service.setState("disabled")
+        # self.motion_service.wakeUp()
         # self.say("Il robot e' pronto")
 
     def point_at(self, x, y, z, effector_name, frame):
@@ -273,18 +273,19 @@ class Pepper:
         robot_map = cv2.resize(img, None, fx=1, fy=1, interpolation=cv2.INTER_CUBIC)
 
         print("[INFO]: Showing the map")
+        cv2.imwrite("./map.png", robot_map)
 
-        if on_robot:
-            # TODO: It requires a HTTPS server running. This should be somehow automated.
-            cv2.imwrite("./tmp/map.png", robot_map)
-            # self.tablet_show_web(remote_ip + ":8000/map.png")
-            # print("[INFO]: Map is available at: " + str(remote_ip) + ":8000/map.png")
-        else:
-            map_name = "map.png"
-            cv2.imwrite(map_name, robot_map)
-            cv2.imshow("RobotMap", robot_map)
-            cv2.waitKey(0)
-            cv2.destroyAllWindows()
+        # if on_robot:
+        #     # TODO: It requires a HTTPS server running. This should be somehow automated.
+        #     cv2.imwrite("./tmp/map.png", robot_map)
+        #     # self.tablet_show_web(remote_ip + ":8000/map.png")
+        #     # print("[INFO]: Map is available at: " + str(remote_ip) + ":8000/map.png")
+        # else:
+        #     map_name = "bobbo.png"
+        #     cv2.imwrite(map_name, robot_map)
+        #     cv2.imshow("RobotMap", robot_map)
+        #     cv2.waitKey(0)
+        #     cv2.destroyAllWindows()
 
     def move_forward(self, speed):
         """
@@ -406,7 +407,7 @@ class Pepper:
         :return: image
         :rtype: cv2 image
         """
-        self.say("Starting exploration in " + str(radius) + " meters")
+        print("Starting exploration in " + str(radius) + " meters")
         self.navigation_service.explore(radius)
         map_file = self.navigation_service.saveExploration()
 
@@ -425,6 +426,7 @@ class Pepper:
         img = numpy.array(img, numpy.uint8)
 
         self.slam_map = img
+        return img
 
     def load_map(self, file_name, file_path="/home/nao/.local/share/Explorer/"):
         """
