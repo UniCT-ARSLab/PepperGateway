@@ -36,11 +36,17 @@ class Pepper:
         self.ip_address = ip_address
         self.port = port
 
-        ssh = paramiko.SSHClient()
-        ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-        ssh.load_system_host_keys()
-        ssh.connect(hostname=self.ip_address, username="nao", password="RoyRoy2009")
-        self.scp = SCPClient(ssh.get_transport())
+        self.ssh = paramiko.SSHClient()
+        self.ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+        self.ssh.load_system_host_keys()
+        self.ssh.connect(hostname=self.ip_address, username="nao", password="RoyRoy2009")
+        scp = SCPClient(self.ssh.get_transport())
+
+        # stdin, stdout, stderr = self.ssh.exec_command('ls /home/nao/.local/share/Explorer/')
+        # all_maps = stdout.readlines()
+        # all_maps = [map.replace("\n", "") for map in all_maps]
+        # for map in all_maps:
+        #     print(map)
 
         self.posture_service = self.session.service("ALRobotPosture")
         self.motion_service = self.session.service("ALMotion")
@@ -77,7 +83,19 @@ class Pepper:
         self.set_security_distance(0.01)
         # self.autonomous_life_service.setState("disabled")
         # self.motion_service.wakeUp()
-        # self.say("Il robot e' pronto")
+        
+        # self.got_obst = False
+        # self.subscriber = self.memory_service.subscriber("Navigation/AvoidanceNavigator/ObstacleDetected")
+        # self.subscriber.signal.connect(self.obstacleDet)
+
+    # def obstacleDet(self, position):
+    #     if position == []: #empty value
+    #         self.got_obst = False
+    #     elif not self.got_obst:
+    #         self.got_obst = True
+    #         print("Obstacle detected!")
+    #         self.tts_service.say("Obstacle detected!")
+    #         print(position)
 
     def point_at(self, x, y, z, effector_name, frame):
         """
@@ -273,7 +291,7 @@ class Pepper:
         robot_map = cv2.resize(img, None, fx=1, fy=1, interpolation=cv2.INTER_CUBIC)
 
         print("[INFO]: Showing the map")
-        cv2.imwrite("./map.png", robot_map)
+        cv2.imwrite("./latest_map.png", robot_map)
 
         # if on_robot:
         #     # TODO: It requires a HTTPS server running. This should be somehow automated.
@@ -445,6 +463,23 @@ class Pepper:
         self.slam_map = self.navigation_service.loadExploration(file_path + file_name)
         print("[INFO]: Map '" + file_name + "' loaded")
 
+    def delete_map(self, file_name, file_path="/home/nao/.local/share/Explorer/"):
+        """
+        Delete stored map on a robot. It will find a map in default location,
+        in other cases alternative path can be specifies by `file_name`.
+
+        .. note:: Default path of stored maps is `/home/nao/.local/share/Explorer/`
+
+        .. warning:: If file path is specified it is needed to have `\` at the end.
+
+        :param file_name: Name of the map
+        :type file_name: string
+        :param file_path: Path to the map
+        :type file_path: string
+        """
+        self.ssh.exec_command('rm ' + file_path + file_name)
+        print("[INFO]: Map '" + file_name + "' deleted")
+    
     def set_volume(self, volume):
         """
         Set robot volume in percentage
@@ -984,6 +1019,18 @@ class Pepper:
         self.scp.get(file_name, local_path="/tmp/")
         print("[INFO]: File " + file_name + " downloaded")
         self.scp.close()
+    
+    def get_maps(self, path = "/home/nao/.local/share/Explorer/"):
+        """
+        Get all maps from robot.
+
+        :param path: Path to the map folder
+        :type path: string
+        """
+        stdin, stdout, stderr = self.ssh.exec_command('ls /home/nao/.local/share/Explorer/')
+        all_maps = stdout.readlines()
+        all_maps = [map.replace("\n", "") for map in all_maps]
+        return all_maps
 
     # def speech_to_text(self, audio_file):
     #     """
@@ -1066,5 +1113,3 @@ class VirtualPepper:
     #         print("[INFO]: Say something...")
     #         audio = recognizer.listen(source)
     #         speech = recognizer.recognize_google(audio, language="it-IT")
-
-    #         return speech

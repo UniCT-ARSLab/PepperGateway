@@ -5,28 +5,213 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Index</title>
+    <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.1/css/all.min.css" integrity="sha512-MV7K8+y+gLIBoVD59lQIYicR65iaqukzvf/nwasF0nqhPay5w/9lJmVM2hMDcnK1OnMGCdVK+iQrJ7lzPJQd1w==" crossorigin="anonymous" referrerpolicy="no-referrer" />
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
 <body>
-    <div class="logo">
-        <img src="{{ url_for('static', filename='img/logo.png') }}" alt="logo" width="250px">
-    </div>
-    <div>
-        <ul class="menu">
-            <li class="menu-items items-left"><a class="menu-items active" href="/">Home</a></li>
-            <li class="menu-items items-left"><a class="menu-items" href="/chat">Chat</a></li>
-            <li class="menu-items items-right"><a class="menu-items" href="/say">Contact</a></li>
-            <li class="menu-items items-right"><a class="menu-items" href="/settings">About</a></li>
-        </ul>
-    </div>
-    <form action="/say" method="post" class="">
-        <div class="login_bar">
-            <input type="text" name="text" class="login" id="text" placeholder="Scrivi qualcosa...">
-            <button class="subscribe_button" onclick="subscribeOnClick()" type="submit">Aggiungi</button>
-            <span class="subscribing"></span>
-            <span class="thanks">Hai aggiunto un nuovo punto alla mappa!</span>
+    <div class="relative bg-white h-screen overflow-y-hidden">
+        <div class="mx-auto max-w-7xl px-6">
+            <div class="flex items-center justify-between border-b-2 border-gray-100 py-6 md:justify-start md:space-x-10">
+                <div class="flex justify-start lg:w-0 lg:flex-1"></div>
+                <div class="-my-2 -mr-2 md:hidden">
+                    <button type="button" class="inline-flex items-center justify-center rounded-md bg-white p-2 text-gray-400 hover:bg-gray-100 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-red-500" aria-expanded="false">
+                        <span class="sr-only">Open menu</span>
+                        <!-- <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
+                        </svg> -->
+                    </button>
+                </div>
+                <nav class="space-x-10 md:flex z-10">
+                    <div class="relative" onclick="showItem('m-1')">
+                        <button type="button" class="text-gray-500 group inline-flex items-center rounded-md bg-white text-base font-medium hover:text-gray-900 focus:outline-none" aria-expanded="false">
+                            <span>Movement</span>
+                            <svg class="text-gray-400 ml-2 h-5 w-5 group-hover:text-gray-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                                <path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clip-rule="evenodd" />
+                            </svg>
+                        </button>
+                        <div class="hidden absolute z-10 -ml-4 mt-3 w-screen max-w-md transform px-2 sm:px-0 lg:left-1/2 lg:ml-0 lg:-translate-x-1/2" id="m-1">
+                            <div class="overflow-hidden rounded-lg shadow-lg ring-1 ring-black ring-opacity-5">
+                                <div class="relative grid gap-6 bg-white px-5 py-6 sm:gap-8 sm:p-8">
+                                    <a href="/joypadMode" class="-m-3 flex items-start rounded-lg p-3 hover:bg-gray-50">
+                                        <svg class="h-6 w-6 flex-shrink-0 text-red-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M15.042 21.672L13.684 16.6m0 0l-2.51 2.225.569-9.47 5.227 7.917-3.286-.672zM12 2.25V4.5m5.834.166l-1.591 1.591M20.25 10.5H18M7.757 14.743l-1.59 1.59M6 10.5H3.75m4.007-4.243l-1.59-1.59" />
+                                        </svg>
+                                        <div class="ml-4">
+                                            <p class="text-base font-medium text-gray-900">Joypad</p>
+                                            <p class="mt-1 text-sm text-gray-500">Move the robot the way you want.</p>
+                                        </div>
+                                    </a>
+                                    <a href="/pointsOfInterest" class="-m-3 flex items-start rounded-lg p-3 hover:bg-gray-50">
+                                        <svg class="h-6 w-6 flex-shrink-0 text-red-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6A2.25 2.25 0 016 3.75h2.25A2.25 2.25 0 0110.5 6v2.25a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25V6zM3.75 15.75A2.25 2.25 0 016 13.5h2.25a2.25 2.25 0 012.25 2.25V18a2.25 2.25 0 01-2.25 2.25H6A2.25 2.25 0 013.75 18v-2.25zM13.5 6a2.25 2.25 0 012.25-2.25H18A2.25 2.25 0 0120.25 6v2.25A2.25 2.25 0 0118 10.5h-2.25a2.25 2.25 0 01-2.25-2.25V6zM13.5 15.75a2.25 2.25 0 012.25-2.25H18a2.25 2.25 0 012.25 2.25V18A2.25 2.25 0 0118 20.25h-2.25A2.25 2.25 0 0113.5 18v-2.25z" />
+                                        </svg>
+                                        <div class="ml-4">
+                                            <p class="text-base font-medium text-gray-900">Points of Interest</p>
+                                            <p class="mt-1 text-sm text-gray-500">Save all your points of interests, permanently.</p>
+                                        </div>
+                                    </a>      
+                                    <a href="/routesCreator" class="-m-3 flex items-start rounded-lg p-3 hover:bg-gray-50">
+                                        <svg class="h-6 w-6 flex-shrink-0 text-red-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99" />
+                                        </svg>
+                                        <div class="ml-4">
+                                            <p class="text-base font-medium text-gray-900">Automations</p>
+                                            <p class="mt-1 text-sm text-gray-500">Build routes for your robot.</p>
+                                        </div>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <a href="/chatMode" class="text-base font-medium text-gray-500 hover:text-gray-900">Conversation</a>
+                    <a href="#" class="text-base font-medium text-gray-500 hover:text-gray-900">Docs</a>
+                    <div class="relative" onclick="showItem('m-2')">
+                        <button type="button" class="text-gray-500 group inline-flex items-center rounded-md bg-white text-base font-medium hover:text-gray-900 focus:outline-none" aria-expanded="false">
+                            <span>More</span>
+                            <svg class="text-gray-400 ml-2 h-5 w-5 group-hover:text-gray-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                                <path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clip-rule="evenodd" />
+                            </svg>
+                        </button>
+                        <div class="hidden absolute left-1/2 z-10 mt-3 w-screen max-w-md -translate-x-1/2 transform px-2 sm:px-0" id="m-2">
+                            <div class="overflow-hidden rounded-lg shadow-lg ring-1 ring-black ring-opacity-5">
+                                <div class="relative grid gap-6 bg-white px-5 py-6 sm:gap-8 sm:p-8">
+                                    <a href="https://github.com/UniCT-ARSLab/PepperGateway" class="-m-3 flex items-start rounded-lg p-3 hover:bg-gray-50">
+                                        <svg class="h-6 w-6 flex-shrink-0 text-red-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M16.712 4.33a9.027 9.027 0 011.652 1.306c.51.51.944 1.064 1.306 1.652M16.712 4.33l-3.448 4.138m3.448-4.138a9.014 9.014 0 00-9.424 0M19.67 7.288l-4.138 3.448m4.138-3.448a9.014 9.014 0 010 9.424m-4.138-5.976a3.736 3.736 0 00-.88-1.388 3.737 3.737 0 00-1.388-.88m2.268 2.268a3.765 3.765 0 010 2.528m-2.268-4.796a3.765 3.765 0 00-2.528 0m4.796 4.796c-.181.506-.475.982-.88 1.388a3.736 3.736 0 01-1.388.88m2.268-2.268l4.138 3.448m0 0a9.027 9.027 0 01-1.306 1.652c-.51.51-1.064.944-1.652 1.306m0 0l-3.448-4.138m3.448 4.138a9.014 9.014 0 01-9.424 0m5.976-4.138a3.765 3.765 0 01-2.528 0m0 0a3.736 3.736 0 01-1.388-.88 3.737 3.737 0 01-.88-1.388m2.268 2.268L7.288 19.67m0 0a9.024 9.024 0 01-1.652-1.306 9.027 9.027 0 01-1.306-1.652m0 0l4.138-3.448M4.33 16.712a9.014 9.014 0 010-9.424m4.138 5.976a3.765 3.765 0 010-2.528m0 0c.181-.506.475-.982.88-1.388a3.736 3.736 0 011.388-.88m-2.268 2.268L4.33 7.288m6.406 1.18L7.288 4.33m0 0a9.024 9.024 0 00-1.652 1.306A9.025 9.025 0 004.33 7.288" />
+                                        </svg>
+                                        <div class="ml-4">
+                                            <p class="text-base font-medium text-gray-900">GitHub</p>
+                                            <p class="mt-1 text-sm text-gray-500">See the source code in my GitHub Repository</p>
+                                        </div>
+                                    </a>
+                                    <a href="/settingsPage" class="-m-3 flex items-start rounded-lg p-3 hover:bg-gray-50">
+                                        <svg class="h-6 w-6 flex-shrink-0 text-red-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5" />
+                                        </svg>
+                                        <div class="ml-4">
+                                            <p class="text-base font-medium text-gray-900">Settings</p>
+                                            <p class="mt-1 text-sm text-gray-500">All settings about this robot.</p>
+                                        </div>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </nav>
+                <div class="hidden items-center justify-end md:flex md:flex-1 lg:w-0"></div>
+            </div>
         </div>
-    </form>
+        <div class="absolute inset-x-0 top-0 origin-top-right transform p-2 transition md:hidden">
+            <div class="divide-y-2 divide-gray-50 rounded-lg bg-white shadow-lg ring-1 ring-black ring-opacity-5">
+                <div class="px-5 pt-5 pb-6">
+                    <div class="flex items-center justify-between">
+                        <div class="-mr-2">
+                            <button type="button" class="inline-flex items-center justify-center rounded-md bg-white p-2 text-gray-400 hover:bg-gray-100 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-red-500">
+                                <span class="sr-only">Close menu</span>
+                                <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="space-y-6 py-6 px-5">
+                        <div class="grid grid-cols-2 gap-y-4 gap-x-8">
+                            <a href="#" class="text-base font-medium text-gray-900 hover:text-red-700">Homepage</a>
+                            <a href="#" class="text-base font-medium text-gray-900 hover:text-red-700">Movement</a>
+                            <a href="#" class="text-base font-medium text-gray-900 hover:text-red-700">Conversation</a>
+                            <a href="#" class="text-base font-medium text-gray-900 hover:text-red-700">Info</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="mx-auto max-w-7xl px-6 lg:px-8">
+            <div class="sm:text-center">
+                <h2 class="text-lg font-semibold leading-8 text-white">Environment</h2>
+                <p class="mt-2 text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl">Chat with Pepper,  ask whatever you want.</p>
+                <p class="mt-6 text-md leading-8 text-gray-600 sm:text-center">Lorem ipsum dolor sit amet consect adipisicing elit. Possimus magnam voluptatum cupiditate veritatis in accusamus quisquam.</p>
+            </div>
+        </div>
+
+        <div class="flex-auto p:2 sm:p-6 justify-between flex flex-col h-screen">
+            <div id="messages" class="flex flex-col space-y-4 p-3 overflow-y-auto scrollbar-thumb-blue scrollbar-thumb-rounded scrollbar-track-blue-lighter scrollbar-w-2 scrolling-touch">
+                <div class="chat-message">
+                    <div class="flex items-end justify-end">
+                        <div class="flex flex-col space-y-2 text-xs max-w-xs mx-2 order-1 items-end">
+                            <div><span class="px-4 py-2 rounded-lg inline-block rounded-br-none bg-red-400 text-white ">Ciao Pepper, potresti andare in laboratorio?</span></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="chat-message">
+                    <div class="flex items-end">
+                        <div class="flex flex-col space-y-2 text-xs max-w-xs mx-2 order-2 items-start">
+                            <div><span class="px-4 py-2 rounded-lg inline-block rounded-bl-none bg-gray-300 text-gray-600">Certo, mi sposto subito in laboratorio!</span></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="relative flex mb-52">
+                <input type="text" placeholder="Write your message!" class="w-full focus:outline-none focus:placeholder-gray-400 text-gray-600 placeholder-gray-600 pl-4 bg-gray-100 rounded-2xl py-3" id="text">
+                <div class="absolute right-0 items-center inset-y-0 hidden sm:flex">
+                    <button type="button" class="inline-flex items-center justify-center rounded-lg px-4 py-3 transition duration-500 ease-in-out text-gray-300 hover:text-gray-400" onclick="sendMessage()">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="h-6 w-6 ml-2 transform rotate-90">
+                            <path d="M10.894 2.553a1 1 0 00-1.788 0l-7 14a1 1 0 001.169 1.409l5-1.429A1 1 0 009 15.571V11a1 1 0 112 0v4.571a1 1 0 00.725.962l5 1.428a1 1 0 001.17-1.408l-7-14z"></path>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="/static/js/indexScript.js"></script>
+    <script src="/static/js/chatMode.js"></script>
+    <script>
+        // function showItem(id) {
+        //     const item = document.getElementById(id);
+        //     item.classList.toggle("hidden");
+        // }
+        // function hideItem(id) {
+        //     const item = document.getElementById(id);
+        //     item.classList.add("hidden");
+        // }
+
+        // function toServer(text) {
+        //     var data = new FormData();
+        //     data.append("json", JSON.stringify(text));
+        //     fetch("http://0.0.0.0:5000/getAnswer",
+        //     {
+        //         method: "POST",
+        //         body: data
+        //     })
+        //     .then(function(res) { return res.json(); })
+        //     .then(function(data) { console.log(data) })
+        // }
+
+        // function createMessage(text) {
+        //     const message = document.createElement('div');
+        //     message.classList.add('chat-message');
+        //     const div = document.createElement('div');
+        //     div.classList.add('flex', 'items-end', 'justify-end');
+        //     const div2 = document.createElement('div');
+        //     div2.classList.add('flex', 'flex-col', 'space-y-2', 'text-xs', 'max-w-xs', 'mx-2', 'order-1', 'items-end');
+        //     const div3 = document.createElement('div');
+        //     const span = document.createElement('span');
+        //     span.classList.add('px-4', 'py-2', 'rounded-lg', 'inline-block', 'rounded-br-none', 'bg-red-400', 'text-white');
+        //     span.innerText = text;
+        //     div3.append(span);
+        //     div2.append(div3);
+        //     div.append(div2);
+        //     message.append(div);
+        //     return message;
+        // }
+        // function sendMessage() {
+        //     const text = document.getElementById('text').value;
+        //     const messages = document.getElementById('messages'); // Messages Area
+        //     messages.append(createMessage(text));
+        //     messages.scrollTop = messages.scrollHeight;
+        //     document.getElementById('text').value = '';
+        //     toServer(text); // Send message to server
+        // }
+    </script>
 </body>
 </html>

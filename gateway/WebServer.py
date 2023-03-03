@@ -76,18 +76,31 @@ class WebServer:
             targetList = Target.query.all() # SELECT * FROM target;
             return render_template('index.html', targetList=targetList)
 
-        @app.route('/pointsOfInterests')
+        @app.route('/pointsOfInterest')
         def pointsOfInterests():
             return render_template('pointsOfInterest.html')
+        
+        @app.route('/Homepage')
+        def getHomepage():
+            return render_template('index.html')
 
         @app.route('/joypadMode')
         def joypadMode():
             return render_template('joypadMode.html')
 
+        @app.route('/chatMode')
+        def chatMode():
+            return render_template('chatMode.html')
+        
+        @app.route('/explorationMode')
+        def explorationMode():
+            return render_template('explorationMode.html')
+
         @app.route('/settingsPage')
         def settingsPage():
             return render_template('settingsPage.html')
-
+        
+        # Points of Interest
         @app.route('/add', methods=['POST'])
         def add():
             target_name = request.form.get('target_name')
@@ -118,15 +131,43 @@ class WebServer:
             # self.robot.navigate_to(item.x, item.y, item.theta)
             return redirect(url_for('pointsOfInterest'))
 
+        # Joypad Mode
+        # Cambia il nome dell'API (fuorviante).
         @app.route('/getMap', methods=['GET'])
         def getMap():
-            self.robot.exploration_mode(3)
+            self.robot.exploration_mode(1)
             self.robot.show_map()
             return "OK"
         
+        # Exploration Mode
+        @app.route('/getMaps', methods=['GET'])
+        def getMaps():
+            return json.dumps(self.robot.get_maps())
+        
+        @app.route('/loadMap', methods=['POST'])
+        def loadMap():            
+            self.robot.load_map(request.data)
+            self.robot.say("Mappa caricata correttamente")
+            return "[INFO] Map loaded correctly"
+        
+        @app.route('/deleteMap', methods=['POST'])
+        def deleteMap():
+            self.robot.delete_map(request.data)
+            self.robot.say("Mappa eliminata correttamente")
+            return render_template('pointsOfInterest.html')
+        
+        # Settings Page
         @app.route('/getBattery', methods=['GET'])
         def getBattery():
             return self.robot.battery_status()
+
+        # Chat Mode
+        @app.route('/getAnswer', methods=['POST'])
+        def getAnswer():
+            text = request.form.get('body') # Doesn't work
+            print("Hai ricevuto un messaggio! " + text)
+            answer = "Echo"
+            return answer # Echo
     
 
     
