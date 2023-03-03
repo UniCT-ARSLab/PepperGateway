@@ -3,10 +3,12 @@ Caricare all'avvio ultima mappa e permettere caricamento tramite tasto.
 Salvare permanentemente il path dell'ultima mappa tracciata.
 
 
-In che formato viene salvata la mappa creata dal robot (salvata nel robot stesso).
-Refactoring di python 2.7
 
-Scrivere una schermata exploration mode in cui appaiono tutte le mappe tracciate e vi sia la possibilità di tracciare una mappa, caricare una mappa tra quelle tracciate - con un tasto per aggiornare la lista - e visualizzare la mappa tracciata. Tracciata una mappa vi è la possibilità di dargli un nome. 
+Integrare schermata show map di joypadMode;
+Correggere bug in joypadMode dati dal cambio di nome delle API;
+Fix menu di explorationMode;
+Correggere possibile bug in exploreEnv relativo al return;
+Implementare bottone sotto.
 
 Qui c'è il tasto che cercavi
 <div class="isolate bg-white py-24 px-6 sm:py-32 lg:px-8">

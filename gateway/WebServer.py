@@ -133,10 +133,12 @@ class WebServer:
 
         # Joypad Mode
         # Cambia il nome dell'API (fuorviante).
-        @app.route('/getMap', methods=['GET'])
-        def getMap():
-            self.robot.exploration_mode(1)
-            self.robot.show_map()
+        @app.route('/exploreEnv', methods=['POST'])
+        def exploreEnv():
+            radius = request.form['radius']
+            self.robot.say("Eseguo l'esplorazione dell'ambiente")
+            self.robot.exploration_mode(radius)
+            # self.robot.show_map()
             return "OK"
         
         # Exploration Mode
