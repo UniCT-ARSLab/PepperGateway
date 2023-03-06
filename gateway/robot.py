@@ -81,8 +81,8 @@ class Pepper:
 
         print("[INFO]: Robot is initialized at " + ip_address + ":" + str(port))
         self.set_security_distance(0.01)
-        # self.autonomous_life_service.setState("disabled")
-        # self.motion_service.wakeUp()
+
+        self.set_autonomous_life(True)
         
         # self.got_obst = False
         # self.subscriber = self.memory_service.subscriber("Navigation/AvoidanceNavigator/ObstacleDetected")
@@ -191,23 +191,20 @@ class Pepper:
         self.tts_service.say(text)
         print("[INFO]: Robot says: " + text)
 
-    def autonomous_life_off(self):
+    def set_autonomous_life(self, state):
         """
-        Switch autonomous life off
+        Set autonomous life on or off
 
         .. note:: After switching off, robot stays in resting posture. After \
         turning autonomous life default posture is invoked
         """
+        if state:
+            self.autonomous_life_service.setState("interactive")
+            print("[AUTONOMOUS LIFE]", self.autonomous_life_service.getState())
+            return "[INFO]: Autonomous life is on"
         self.autonomous_life_service.setState("disabled")
-        self.stand()
-        print("[INFO]: Autonomous life is off")
-
-    def autonomous_life_on(self):
-        """Switch autonomous life on"""
-        self.autonomous_life_service.setState("interactive")
-
-        print("[AUTONOMOUS LIFE]", self.autonomous_life_service.getState())
-        print("[INFO]: Autonomous life is on")
+        self.motion_service.wakeUp()
+        return "[INFO]: Autonomous life is off"
 
     def track_object(self, object_name, effector_name, diameter=0.05):
         """
@@ -838,60 +835,60 @@ class Pepper:
         """Prints all installed behaviors on the robot"""
         print(self.behavior_service.getBehaviorNames())
 
-    def get_face_properties(self):
-        """
-        Gets all face properties from the tracked face in front of
-        the robot.
+    # def get_face_properties(self):
+    #     """
+    #     Gets all face properties from the tracked face in front of
+    #     the robot.
 
-        It tracks:
-        - Emotions (neutral, happy, surprised, angry and sad
-        - Age
-        - Gender
+    #     It tracks:
+    #     - Emotions (neutral, happy, surprised, angry and sad
+    #     - Age
+    #     - Gender
 
-        .. note:: It also have a feature that it substracts a 5 year if it talks to a female.
+    #     .. note:: It also have a feature that it substracts a 5 year if it talks to a female.
 
-        .. note:: If it cannot decide which gender the user is, it just greets her/him as "Hello human being"
+    #     .. note:: If it cannot decide which gender the user is, it just greets her/him as "Hello human being"
 
-        ..warning:: To get this feature working `ALAutonomousLife` process is needed. In this methods it is \
-        called by default
-        """
-        self.autonomous_life_on()
-        emotions = ["neutral", "happy", "surprised", "angry", "sad"]
-        face_id = self.memory_service.getData("PeoplePerception/PeopleList")
-        recognized = None
-        try:
-            recognized = self.face_characteristic.analyzeFaceCharacteristics(face_id[0])
-        except Exception as error:
-            print("[ERROR]: Cannot find a face to analyze.")
-            self.say("I cannot recognize a face.")
+    #     ..warning:: To get this feature working `ALAutonomousLife` process is needed. In this methods it is \
+    #     called by default
+    #     """
+    #     self.autonomous_life_on()
+    #     emotions = ["neutral", "happy", "surprised", "angry", "sad"]
+    #     face_id = self.memory_service.getData("PeoplePerception/PeopleList")
+    #     recognized = None
+    #     try:
+    #         recognized = self.face_characteristic.analyzeFaceCharacteristics(face_id[0])
+    #     except Exception as error:
+    #         print("[ERROR]: Cannot find a face to analyze.")
+    #         self.say("I cannot recognize a face.")
 
-        if recognized:
-            properties = self.memory_service.getData("PeoplePerception/Person/" + str(face_id[0]) + "/ExpressionProperties")
-            gender = self.memory_service.getData("PeoplePerception/Person/" + str(face_id[0]) + "/GenderProperties")
-            age = self.memory_service.getData("PeoplePerception/Person/" + str(face_id[0]) + "/AgeProperties")
+    #     if recognized:
+    #         properties = self.memory_service.getData("PeoplePerception/Person/" + str(face_id[0]) + "/ExpressionProperties")
+    #         gender = self.memory_service.getData("PeoplePerception/Person/" + str(face_id[0]) + "/GenderProperties")
+    #         age = self.memory_service.getData("PeoplePerception/Person/" + str(face_id[0]) + "/AgeProperties")
 
-            # Gender properties
-            if gender[1] > 0.4:
-                if gender[0] == 0:
-                    self.say("Hello lady!")
-                elif gender[0] == 1:
-                    self.say("Hello sir!")
-            else:
-                self.say("Hello human being!")
+    #         # Gender properties
+    #         if gender[1] > 0.4:
+    #             if gender[0] == 0:
+    #                 self.say("Hello lady!")
+    #             elif gender[0] == 1:
+    #                 self.say("Hello sir!")
+    #         else:
+    #             self.say("Hello human being!")
 
-            # Age properties
-            if gender[1] == 1:
-                self.say("You are " + str(int(age[0])) + " years old.")
-            else:
-                self.say("You look like " + str(int(age[0])) + " oops, I mean " + str(int(age[0]-5)))
+    #         # Age properties
+    #         if gender[1] == 1:
+    #             self.say("You are " + str(int(age[0])) + " years old.")
+    #         else:
+    #             self.say("You look like " + str(int(age[0])) + " oops, I mean " + str(int(age[0]-5)))
 
-            # Emotion properties
-            emotion_index = (properties.index(max(properties)))
+    #         # Emotion properties
+    #         emotion_index = (properties.index(max(properties)))
 
-            if emotion_index > 0.5:
-                self.say("I am quite sure your mood is " + emotions[emotion_index])
-            else:
-                self.say("I guess your mood is " + emotions[emotion_index])
+    #         if emotion_index > 0.5:
+    #             self.say("I am quite sure your mood is " + emotions[emotion_index])
+    #         else:
+    #             self.say("I guess your mood is " + emotions[emotion_index])
 
     def listen_to(self, vocabulary):
         """
@@ -976,7 +973,6 @@ class Pepper:
 
         ..warning:: Autonomous life has to be turned on to process audio
         """
-        #self.self.autonomous_life_on()
         self.speech_service.setAudioExpression(False)
         self.speech_service.setVisualExpression(False)
         self.set_awareness(False)

@@ -162,6 +162,11 @@ class WebServer:
         @app.route('/getBattery', methods=['GET'])
         def getBattery():
             return self.robot.battery_status()
+        
+        @app.route('/setAutonomous', methods=['POST'])
+        def setAutonomous():
+            state = json.loads(request.data)
+            return self.robot.set_autonomous_life(state["data"])
 
         # Chat Mode
         @app.route('/getAnswer', methods=['POST'])
