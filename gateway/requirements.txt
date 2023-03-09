@@ -1,5 +1,4 @@
 # spacy
-# chatterbot==1.0.4
 requests
 opencv-python==4.2.0.32
 numpy 
@@ -9,8 +8,10 @@ wikipedia
 paramiko 
 scp 
 inputs
-SpeechRecognition
 Flask
 flask_sqlalchemy
 gevent
 gevent-websocket
+SpeechRecognition==3.1.2
+# SpeechRecognition==3.4.6
+pyaudio==0.2.11

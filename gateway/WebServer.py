@@ -131,17 +131,15 @@ class WebServer:
             # self.robot.navigate_to(item.x, item.y, item.theta)
             return redirect(url_for('pointsOfInterest'))
 
-        # Joypad Mode
-        # Cambia il nome dell'API (fuorviante).
+        # Exploration Mode
         @app.route('/exploreEnv', methods=['POST'])
         def exploreEnv():
-            radius = request.form['radius']
+            radius = json.loads(request.data)["data"]
             self.robot.say("Eseguo l'esplorazione dell'ambiente")
-            self.robot.exploration_mode(radius)
-            # self.robot.show_map()
-            return "OK"
+            self.robot.exploration_mode(int(radius))
+            self.robot.save_map()
+            return "[INFO] Exploration completed"
         
-        # Exploration Mode
         @app.route('/getMaps', methods=['GET'])
         def getMaps():
             return json.dumps(self.robot.get_maps())
@@ -171,10 +169,13 @@ class WebServer:
         # Chat Mode
         @app.route('/getAnswer', methods=['POST'])
         def getAnswer():
-            text = request.form.get('body') # Doesn't work
-            print("Hai ricevuto un messaggio! " + text)
-            answer = "Echo"
-            return answer # Echo
+            question = json.loads(request.data)["data"]
+            return self.robot.get_answer(question)
+
+        @app.route('/startListening', methods=['GET'])
+        def startListening():
+            return self.robot.listen()
+    
     
 
     

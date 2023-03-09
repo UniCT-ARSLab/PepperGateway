@@ -66,8 +66,3 @@ function scale (number, inMin, inMax, outMin, outMax) {
 	return (number - inMin) * (outMax - outMin) / (inMax - inMin) + outMin;
 }
 
-function startStream(message, msg_type) {
-    doSend(message, msg_type);
-}
-
-// TODO: Implementare due nuovi joystick per il movimento delle due braccia.

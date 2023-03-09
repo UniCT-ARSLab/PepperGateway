@@ -8,6 +8,59 @@
     <title>Exploration Mode</title>
 </head>
 <body>
+    <!-- Map Section -->
+    <div class="hidden relative z-10" role="dialog" aria-modal="true" id="grayBackground">
+        <div class="fixed inset-0 hidden bg-gray-500 bg-opacity-75 transition-opacity md:block"></div>
+        <div class="fixed inset-0 z-10 overflow-y-auto">
+            <div class="flex min-h-full items-stretch justify-center text-center md:items-center md:px-2 lg:px-4">
+                <div class="flex w-full transform text-left text-base transition md:my-8 md:max-w-2xl md:px-4 lg:max-w-4xl">
+                    <div role="status" class="hidden absolute -translate-x-1/2 -translate-y-1/2 top-2/4 left-1/2" id="loaderItem">
+                        <svg aria-hidden="true" class="w-8 h-8 mr-2 text-gray-200 animate-spin dark:text-gray-600 fill-blue-600" viewBox="0 0 100 101" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M100 50.5908C100 78.2051 77.6142 100.591 50 100.591C22.3858 100.591 0 78.2051 0 50.5908C0 22.9766 22.3858 0.59082 50 0.59082C77.6142 0.59082 100 22.9766 100 50.5908ZM9.08144 50.5908C9.08144 73.1895 27.4013 91.5094 50 91.5094C72.5987 91.5094 90.9186 73.1895 90.9186 50.5908C90.9186 27.9921 72.5987 9.67226 50 9.67226C27.4013 9.67226 9.08144 27.9921 9.08144 50.5908Z" fill="currentColor"/><path d="M93.9676 39.0409C96.393 38.4038 97.8624 35.9116 97.0079 33.5539C95.2932 28.8227 92.871 24.3692 89.8167 20.348C85.8452 15.1192 80.8826 10.7238 75.2124 7.41289C69.5422 4.10194 63.2754 1.94025 56.7698 1.05124C51.7666 0.367541 46.6976 0.446843 41.7345 1.27873C39.2613 1.69328 37.813 4.19778 38.4501 6.62326C39.0873 9.04874 41.5694 10.4717 44.0505 10.1071C47.8511 9.54855 51.7191 9.52689 55.5402 10.0491C60.8642 10.7766 65.9928 12.5457 70.6331 15.2552C75.2735 17.9648 79.3347 21.5619 82.5849 25.841C84.9175 28.9121 86.7997 32.2913 88.1811 35.8758C89.083 38.2158 91.5421 39.6781 93.9676 39.0409Z" fill="currentFill"/></svg>
+                        <span class="sr-only">Loading...</span>
+                    </div>
+                    <div class="hidden relative flex items-center overflow-hidden bg-white px-4 pt-14 pb-8 shadow-2xl sm:px-6 sm:pt-8 md:p-6 lg:p-8 rounded-lg" id="mapSection">
+                        <button type="button" class="absolute top-4 right-4 text-gray-400 hover:text-gray-500 sm:top-8 sm:right-6 md:top-6 md:right-6 lg:top-8 lg:right-8" onclick="mapSection('False')">
+                            <span class="sr-only">Close</span>
+                            <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                        </button>
+                        <div class="grid w-full grid-cols-1 items-start gap-y-8 gap-x-6 sm:grid-cols-12 lg:gap-x-8">
+                            <div class="aspect-w-2 aspect-h-3 overflow-hidden rounded-lg bg-gray-100 sm:col-span-4 lg:col-span-5">
+                                <img src="{{ url_for('static', filename='img/latest_map.png') }}" alt="Pepper" class="object-contain content-center mx-auto h-8">
+                            </div>
+                            <div class="sm:col-span-8 lg:col-span-7">
+                                <h2 class="text-2xl font-bold text-gray-900 sm:pr-12">Metrical Map</h2>
+                                <section aria-labelledby="options-heading" class="mt-4">
+                                    <div>
+                                        <div class="mt-2">
+                                            <div class="flex items-center justify-between">
+                                                <h4 class="text-sm font-medium text-gray-900">Spiegazione</h4>
+                                            </div>
+                                        </div>
+                                        <h5 class="text-sm text-gray-800">
+                                            Questa è la mappa tracciata dal robot. Il punto in rosso è il robot stesso all'interno della mappa.
+                                            Una volta tracciata la mappa è possibile salvare dei punti di interesse all'interno della mappa stessa,
+                                            raggiungibili successivamente ed in autonomia da parte del robot.
+                                        </h4>
+                                        <div class="mt-2">
+                                            <div class="flex items-center justify-between">
+                                                <h4 class="text-sm font-medium text-gray-900">Tips</h4>
+                                            </div>
+                                        </div>
+                                        <h5 class="text-sm text-gray-800">
+                                            La mappa tracciata dal robot possiede un raggio predefinito di dieci metri, un valore che può essere modificato all'interno della pagina <i>Settings</i>.<br> Per tracciare una nuova mappa è sufficiente avviare nuovamente <i>Exploration Mode</i>.<br>
+                                            Si noti che l'ultima mappa tracciata è quella che viene caricata all'avvio all'interno del robot.
+                                        </h5>
+                                    </div>
+                                </section>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
     <div class="relative bg-white">
         <div class="mx-auto max-w-7xl px-6">
             <div class="flex items-center justify-between border-b-2 border-gray-100 py-6 md:justify-start md:space-x-10">
@@ -93,13 +146,13 @@
                             <p class="mt-6 text-lg leading-8 text-gray-600 sm:text-center">Here you can explore new environment or load your tracked map</p>
                             <div class="mt-8 flex gap-x-4 sm:justify-center">
                                 <div class="relative overflow-x-auto shadow-md sm:rounded-lg">
-                                    <form action="/exploreEnv" method="post">
+                                    <div>
                                         <label for="default-search" class="mb-2 text-sm font-medium text-gray-900 sr-only">Set the radius of your new map...</label>
                                         <div class="relative">
-                                            <input type="text" id="radius" name="radius" class="block w-full p-4 pl-10 text-sm text-gray-900 rounded-lg bg-gray-50" placeholder="Set name for your new map..." required>
-                                            <button type="submit" class="text-blue-700 absolute right-2.5 bottom-2 bg-white-700 font-medium rounded-lg text-sm px-4 py-2">Explore</button>
+                                            <input type="text" id="radius" name="radius" class="block w-full p-4 pl-10 text-sm text-gray-900 rounded-lg bg-gray-50" placeholder="Set radius for your new map..." required>
+                                            <button type="submit" class="text-blue-700 absolute right-2.5 bottom-2 bg-white-700 font-medium rounded-lg text-sm px-4 py-2" onclick="explorationMode()">Explore</button>
                                         </div>
-                                    </form>
+                                    </div>
                                     <table class="w-full text-sm text-left text-gray-500 dark:text-gray-400" id="maps_table">
                                         <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-white-700 dark:text-gray-400">
                                             <tr>
@@ -107,10 +160,10 @@
                                                     Map Name
                                                 </th>
                                                 <th scope="col" class="px-6 py-3">
-                                                    <span class="sr-only">Carica</span>
+                                                    <span class="sr-only">Load</span>
                                                 </th>
                                                 <th scope="col" class="px-6 py-3">
-                                                    <span class="sr-only">Elimina</span>
+                                                    <span class="sr-only">Delete</span>
                                                 </th>
                                             </tr>
                                         </thead>

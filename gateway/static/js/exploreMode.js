@@ -1,3 +1,35 @@
+function mapSection(_) {
+    if (_) {
+        showItem('mapSection');
+        showItem('grayBackground');
+    } else {
+        hideItem('mapSection');
+        hideItem('grayBackground');
+    }
+}
+
+function explorationMode() {
+    const radius = document.getElementById('radius').value;
+    const loader = document.getElementById('loaderItem');
+    showItem('grayBackground');
+    showItem('loaderItem');
+    fetch('/exploreEnv', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            data: radius
+        })
+    })
+    .then(response => {
+        hideItem('loaderItem');
+        if (response.ok) {
+            showItem('mapSection');
+        } else throw new Error('Errore nella chiamata al server');
+    })
+}
+
 async function getMaps() {
     const response = await fetch('/getMaps');
     const maps = await response.json();

@@ -2,7 +2,7 @@ import qi
 import time
 import numpy
 import cv2
-# import speech_recognition
+import speech_recognition
 import gtts
 import playsound
 import subprocess
@@ -10,6 +10,7 @@ import subprocess
 import socket
 import paramiko
 from scp import SCPClient
+from GPT import *
 
 class Pepper:
     """
@@ -40,13 +41,7 @@ class Pepper:
         self.ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
         self.ssh.load_system_host_keys()
         self.ssh.connect(hostname=self.ip_address, username="nao", password="RoyRoy2009")
-        scp = SCPClient(self.ssh.get_transport())
-
-        # stdin, stdout, stderr = self.ssh.exec_command('ls /home/nao/.local/share/Explorer/')
-        # all_maps = stdout.readlines()
-        # all_maps = [map.replace("\n", "") for map in all_maps]
-        # for map in all_maps:
-        #     print(map)
+        self.scp = SCPClient(self.ssh.get_transport())
 
         self.posture_service = self.session.service("ALRobotPosture")
         self.motion_service = self.session.service("ALMotion")
@@ -76,6 +71,8 @@ class Pepper:
         self.localization = None
         self.camera_link = None
 
+        self.recognizer = speech_recognition.Recognizer()
+
         # It contains all saved point of interests
         self.point_of_interests = {}
 
@@ -83,6 +80,8 @@ class Pepper:
         self.set_security_distance(0.01)
 
         self.set_autonomous_life(True)
+
+        self.bot = GPT()
         
         # self.got_obst = False
         # self.subscriber = self.memory_service.subscriber("Navigation/AvoidanceNavigator/ObstacleDetected")
@@ -130,10 +129,14 @@ class Pepper:
 
     def move_toward(self, x, y, theta):
         """
-        Move forward with certain speed
+        Move toward to certain direction
 
-        :param speed: Positive values forward, negative backwards
-        :type speed: float
+        :param x: X axis in meters
+        :param y: Y axis in meters
+        :param theta: Rotation around Z axis in radians
+        :type x: float
+        :type y: float
+        :type theta: float
         """
         self.motion_service.moveToward(x, y, theta)
 
@@ -250,7 +253,7 @@ class Pepper:
         self.unsubscribe_effector()
         self.say("Let's do something else!")
 
-    def show_map(self, on_robot=False, remote_ip=None):
+    def save_map(self):
         """
         Shows a map from robot based on previously loaded one
         or explicit exploration of the scene. It can be viewed on
@@ -288,19 +291,7 @@ class Pepper:
         robot_map = cv2.resize(img, None, fx=1, fy=1, interpolation=cv2.INTER_CUBIC)
 
         print("[INFO]: Showing the map")
-        cv2.imwrite("./latest_map.png", robot_map)
-
-        # if on_robot:
-        #     # TODO: It requires a HTTPS server running. This should be somehow automated.
-        #     cv2.imwrite("./tmp/map.png", robot_map)
-        #     # self.tablet_show_web(remote_ip + ":8000/map.png")
-        #     # print("[INFO]: Map is available at: " + str(remote_ip) + ":8000/map.png")
-        # else:
-        #     map_name = "bobbo.png"
-        #     cv2.imwrite(map_name, robot_map)
-        #     cv2.imshow("RobotMap", robot_map)
-        #     cv2.waitKey(0)
-        #     cv2.destroyAllWindows()
+        cv2.imwrite("./static/img/latest_map.png", robot_map)
 
     def move_forward(self, speed):
         """
@@ -422,7 +413,7 @@ class Pepper:
         :return: image
         :rtype: cv2 image
         """
-        print("Starting exploration in " + str(radius) + " meters")
+        print("Starting exploration")
         self.navigation_service.explore(radius)
         map_file = self.navigation_service.saveExploration()
 
@@ -784,7 +775,7 @@ class Pepper:
         :type sound: string
         """
         print("[INFO]: Playing " + sound)
-        self.audio_service.playFile(sound)
+        self.audio_service.playFile("/home/nao/" + sound)
 
     def stop_sound(self):
         """Stop sound"""
@@ -942,6 +933,10 @@ class Pepper:
         :return: Speech to text
         :rtype: string
         """
+
+        self.play_sound("speech.wav")
+        return "OK"
+    
         self.speech_service.setAudioExpression(False)
         self.speech_service.setVisualExpression(False)
         self.audio_recorder.stopMicrophonesRecording()
@@ -951,14 +946,12 @@ class Pepper:
             if self.memory_service.getData("ALSpeechRecognition/Status") == "SpeechDetected":
                 self.audio_recorder.startMicrophonesRecording("/home/nao/speech.wav", "wav", 48000, (0, 0, 1, 0))
                 print("[INFO]: Robot is listening to you")
-                self.blink_eyes([255, 0, 0])
                 break
 
         while True:
             if self.memory_service.getData("ALSpeechRecognition/Status") == "EndOfProcess":
                 self.audio_recorder.stopMicrophonesRecording()
                 print("[INFO]: Robot is not listening to you")
-                self.blink_eyes([0, 0, 255])
                 break
 
         self.download_file("speech.wav")
@@ -1012,7 +1005,7 @@ class Pepper:
         :param file_name: File name with extension (or path)
         :type file_name: string
         """
-        self.scp.get(file_name, local_path="/tmp/")
+        self.scp.get(file_name, local_path="tmp/" + file_name)
         print("[INFO]: File " + file_name + " downloaded")
         self.scp.close()
     
@@ -1027,21 +1020,30 @@ class Pepper:
         all_maps = stdout.readlines()
         all_maps = [map.replace("\n", "") for map in all_maps]
         return all_maps
+    
+    def get_answer(self, question):
+        """
+        Get all answers from robot using external API.
 
-    # def speech_to_text(self, audio_file):
-    #     """
-    #     Translate speech to text via Google Speech API
+        :param question: Question to the robot
+        :type path: string
+        """
+        return self.bot.get_response(question)
 
-    #     :param audio_file: Name of the audio (default `speech.wav`
-    #     :type audio_file: string
-    #     :return: Text of the speech
-    #     :rtype: string
-    #     """
-    #     audio_file = speech_recognition.AudioFile("/tmp/" + audio_file)
-    #     with audio_file as source:
-    #         audio = self.recognizer.record(source)
-    #         recognized = self.recognizer.recognize_google(audio, language="it_IT")
-    #     return recognized
+    def speech_to_text(self, audio_file):
+        """
+        Translate speech to text via Google Speech API
+
+        :param audio_file: Name of the audio (default `speech.wav`
+        :type audio_file: string
+        :return: Text of the speech
+        :rtype: string
+        """
+        audio_file = speech_recognition.AudioFile("/tmp/" + audio_file)
+        with audio_file as source:
+            audio = self.recognizer.record(source)
+            recognized = self.recognizer.recognize_google(audio, language="it_IT")
+        return recognized
 
     def get_robot_name(self):
         """
@@ -1101,11 +1103,11 @@ class VirtualPepper:
         tts.save("./tmp_speech.mp3")
         playsound.playsound("./tmp_speech.mp3")
 
-    # @staticmethod
-    # def listen():
-    #     """Speech to text by Google Speech Recognition"""
-    #     recognizer = speech_recognition.Recognizer()
-    #     with speech_recognition.Microphone() as source:
-    #         print("[INFO]: Say something...")
-    #         audio = recognizer.listen(source)
-    #         speech = recognizer.recognize_google(audio, language="it-IT")
+    @staticmethod
+    def listen():
+        """Speech to text by Google Speech Recognition"""
+        recognizer = speech_recognition.Recognizer()
+        with speech_recognition.Microphone() as source:
+            print("[INFO]: Say something...")
+            audio = recognizer.listen(source)
+            speech = recognizer.recognize_google(audio, language="it-IT")

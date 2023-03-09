@@ -13,6 +13,7 @@ ENV FLASK_RUN_PORT=5000
 
 RUN apt-get update
 RUN pip install --upgrade pip
+RUN apt-get install -y libasound-dev portaudio19-dev libportaudio2 libportaudiocpp0 ffmpeg flac
 RUN pip install -r requirements.txt
 
 EXPOSE 6566
