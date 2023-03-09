@@ -81,7 +81,9 @@ class Pepper:
 
         self.set_autonomous_life(True)
 
-        self.bot = GPT()
+        # self.bot = GPT()
+        self.listen()
+
         
         # self.got_obst = False
         # self.subscriber = self.memory_service.subscriber("Navigation/AvoidanceNavigator/ObstacleDetected")
@@ -933,10 +935,6 @@ class Pepper:
         :return: Speech to text
         :rtype: string
         """
-
-        self.play_sound("speech.wav")
-        return "OK"
-    
         self.speech_service.setAudioExpression(False)
         self.speech_service.setVisualExpression(False)
         self.audio_recorder.stopMicrophonesRecording()
@@ -958,7 +956,7 @@ class Pepper:
         self.speech_service.setAudioExpression(True)
         self.speech_service.setVisualExpression(True)
 
-        return self.speech_to_text("speech.wav")
+        return self.speech_to_text("speech.wav")["alternative"][1]["transcript"]
 
     def ask_wikipedia(self):
         """
@@ -1039,10 +1037,10 @@ class Pepper:
         :return: Text of the speech
         :rtype: string
         """
-        audio_file = speech_recognition.AudioFile("/tmp/" + audio_file)
+        audio_file = speech_recognition.AudioFile("tmp/" + audio_file)
         with audio_file as source:
             audio = self.recognizer.record(source)
-            recognized = self.recognizer.recognize_google(audio, language="it_IT")
+            recognized = self.recognizer.recognize_google(audio, language="it-IT", show_all=True)
         return recognized
 
     def get_robot_name(self):

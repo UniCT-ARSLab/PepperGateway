@@ -12,6 +12,6 @@ Flask
 flask_sqlalchemy
 gevent
 gevent-websocket
-SpeechRecognition==3.1.2
-# SpeechRecognition==3.4.6
+# SpeechRecognition==3.1.2
+SpeechRecognition==3.4.6
 pyaudio==0.2.11
