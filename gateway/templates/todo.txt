@@ -19,4 +19,45 @@ API KEY OPENAI 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
 curl https://api.openai.com/v1/completions \
 -H "Content-Type: application/json" \
 -H "Authorization: Bearer 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" \
--d '{"model": "text-davinci-003", "prompt": "Say this is a test", "temperature": 0, "max_tokens": 7}'
+-d '{"model": "text-davinci-003", "prompt": "Say this is a test", "temperature": 0, "max_tVa beneens": 7}'
+
+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 CHIARA KEY
+
+[2023-03-14 12:09:06] Created fine-tune: ft-dLYiMe8SR3d7DBPnEtE4bOro
+ID Fine Tune: file-i8eVXyDOIT5mSQL6unEfVZz2
+openai api completions.create -m davinci:ft-personal-2023-03-14-11-34-19 -p /Users/giuseppepitruzzella/PepperGateway/Gateway/data_prepared.jsonl
+
+curl https://api.openai.com/v1/completions \
+  -H "Authorization: Bearer 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" \
+  -H "Content-Type: application/json" \
+  -d '{"prompt": /Users/giuseppepitruzzella/PepperGateway/Gateway/data_prepared.jsonl, "model": davinci:ft-personal-2023-03-14-11-34-19}'
+
+curl https://api.openai.com/v1/completions \
+  -H 'Content-Type: application/json' \
+  -H 'Authorization: Bearer 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' \
+  -d '{
+  "prompt": "Come ti chiami? ->",
+  "max_tokens": 1,
+  "model": "davinci:ft-personal-2023-03-14-11-34-19"
+}'
+
+  {"id":"cmpl-6txNBuj5SEQeQ3moVjBY9WJEhzqWE","object":"text_completion","created":1678794289,"model":"davinci:ft-personal-2023-03-14-11-34-19","choices":[{"text":" <a href='{'azione':'conversazione','val","index":0,"logprobs":null,"finish_reason":"length"}],"usage":{"prompt_tokens":5,"completion_tokens":16,"total_tokens":21}}
+
+https://platform.openai.com/docs/guides/fine-tuning
+
+Utilizzare file di configurazione importando libreria config come su repo robot.py
+IP_ADDRESS = "YOUR_IP_ADDRESS"
+PORT = YOUR_PORT
+CHATGPT_API_KEY = "YOUR_CHATGPT_API_KEY"
+PEPPER_USERNAME = "YOUR_PEPPER_USERNAME"
+PEPPER_PASSWORD = "YOUR_PEPPER_PASSWORD"
+
+Ciao, da questo momento il tuo nome è Pepper (o, in alternativa, Chicco), sei un robot da laboratorio e sei stato sviluppato da Giuseppe Pitruzzella, Federico Santoro e Corrado Santoro. 
+Ad ogni domanda, rispondi esclusivamente secondo un formato strutturato JSON che possegga le coppie chiavi-valore: "azione", "valore" e "risposta". 
+La chiave "azione" dipende dal testo della domanda e può essere uguale a: "movimento", "conversazione". 
+Se "azione" è uguale a movimento allora il "valore" è uguale ad un valore numerico che indica lo spostamento in metri. 
+Se "valore" è uguale a "conversazione" allora "valore" è uguale alla risposta testuale relativa alla domanda.
+
+
+
+

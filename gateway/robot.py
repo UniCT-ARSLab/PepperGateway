@@ -81,8 +81,7 @@ class Pepper:
 
         self.set_autonomous_life(True)
 
-        # self.bot = GPT()
-        self.listen()
+        self.bot = GPT()
 
         
         # self.got_obst = False
@@ -916,6 +915,28 @@ class Pepper:
         except:
             pass
 
+    def _listen(self):
+        self.speech_service.setAudioExpression(False)
+        self.speech_service.setVisualExpression(False)
+        self.audio_recorder.stopMicrophonesRecording()
+        print("[INFO]: Robot is listening to you...")
+        self.audio_recorder.startMicrophonesRecording("/home/nao/speech.wav", "wav", 48000, (0, 0, 1, 0))
+        time.sleep(10)
+        self.audio_recorder.stopMicrophonesRecording()
+        print("[INFO]: Robot is not listening to you...")
+
+        self.download_file("speech.wav")
+        self.speech_service.setAudioExpression(True)
+        self.speech_service.setVisualExpression(True)
+
+        # msg = self.speech_to_text("speech.wav")["alternative"][0]["transcript"]
+        msg = self.speech_to_text("speech.wav")
+        print(msg)
+        # msg = msg["alternative"][0]["transcript"]
+        # msg = str(self.speech_to_text("speech.wav")["alternative"][1]["transcript"])
+
+        return msg
+
     def listen(self):
         """
         Wildcard speech recognition via internal Pepper engine
@@ -944,6 +965,7 @@ class Pepper:
             if self.memory_service.getData("ALSpeechRecognition/Status") == "SpeechDetected":
                 self.audio_recorder.startMicrophonesRecording("/home/nao/speech.wav", "wav", 48000, (0, 0, 1, 0))
                 print("[INFO]: Robot is listening to you")
+                time.sleep(10)
                 break
 
         while True:
@@ -956,7 +978,9 @@ class Pepper:
         self.speech_service.setAudioExpression(True)
         self.speech_service.setVisualExpression(True)
 
-        return self.speech_to_text("speech.wav")["alternative"][1]["transcript"]
+        print(self.speech_to_text("speech.wav")["alternative"][1]["transcript"])
+        # print(self.speech_to_text("speech.wav"))
+        return "OK"
 
     def ask_wikipedia(self):
         """

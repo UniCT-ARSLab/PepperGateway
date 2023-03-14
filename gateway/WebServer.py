@@ -174,7 +174,7 @@ class WebServer:
 
         @app.route('/startListening', methods=['GET'])
         def startListening():
-            return self.robot.listen()
+            return self.robot._listen()
     
     
 

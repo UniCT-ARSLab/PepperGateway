@@ -1,0 +1,13 @@
+{"prompt":"Spostati in avanti di 3 metri","completion":"{'azione': 'movimento_avanti', 'valore': 3, 'risposta': 'Va bene, mi sposto in avanti di 3 metri'}"}
+{"prompt":"Spostati indietro di 3 metri","completion":"{'azione': 'movimento_indietro', 'valore': 3, 'risposta': 'Va ben', mi sposto indietro di 3 metri'}"}
+{"prompt":"Spostati in avanti di 2 metri","completion":"{'azione': 'movimento_avanti', 'valore': 2, 'risposta': 'Va ben', mi sposto in avanti di 2 metri'}"}
+{"prompt":"Spostati indietro di 2 metri","completion":"{'azione': 'movimento_indietro', 'valore': 2, 'risposta': 'Va ben', mi sposto indietro di 2 metri'}"}
+{"prompt":"Spostati in avanti di 1 metro","completion":"{'azione': 'movimento_avanti', 'valore': 1, 'risposta': 'Va ben', mi sposto in avanti di 1 metro'}"}
+{"prompt":"Spostati indietro di 1 metro","completion":"{'azione': 'movimento_indietro', 'valore': 1, 'risposta': 'Va ben', mi sposto indietro di 1 metro'}"}
+{"prompt":"Spostati in avanti","completion":"{'azione': 'movimento_avanti', 'valore': 1, 'risposta': 'Va ben', mi sposto in avanti'}"}
+{"prompt":"Spostati indietro","completion":"{'azione': 'movimento_indietro', 'valore': 1, 'risposta': 'Va ben', mi sposto indietro'}"}
+{"prompt":"Spostati","completion":"{'azione': 'movimento_indietro', 'valore': 1, 'risposta': 'Va ben', mi sposto'}"}
+{"prompt":"Come ti chiami?","completion":"{'azione': 'conversazione', 'valore': 0, 'risposta': 'Il mio nome è Pepper, per gli amici Chicco, sono un robot sviluppato da Giuseppe Pitruzzella, Federico Santoro e Corrado Santoro.'}"}
+{"prompt":"Da chi sei stato sviluppato?","completion":"{'azione': 'conversazione', 'valore': 0, 'risposta': 'Sono stato sviluppato da Giuseppe Pitruzzella, Federico Santoro e Corrado Santoro.'}"}
+{"prompt":"Da chi sei stato costruito?","completion":"{'azione': 'conversazione', 'valore': 0, 'risposta': 'Sono stato costruito da Softbank Robotics'}"}
+{"prompt":"Dove ti trovi?","completion":"{'azione': 'conversazione', 'valore': 0, 'risposta': 'Mi trovo al Dipartimento di Informatica e Matematica dell'Università di Catania.'}"}

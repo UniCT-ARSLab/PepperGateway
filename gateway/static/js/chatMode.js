@@ -53,8 +53,9 @@ function sendMessage() {
 function getMicrophone(startRecording = true) {
     if (startRecording) {
         fetch('/startListening')
-            .then(data => data.text())
-            .then(data => console.log(data));
+            .then(data => console.log(data.text()))
+            .then(data => appendMessage(data))
+            .then(() => recordVoice());
     }
     // else {
 }
