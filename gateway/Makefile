@@ -8,5 +8,5 @@ run-test:
 run:
 	docker run --rm -it -p 6566:6566 -p 5000:5000 -v /Users/giuseppepitruzzella/PepperGateway/Gateway/:/app/ --name gw pepper-testing
 
-run-flask:
-	docker run --rm -it -p 5000:5000 --name gw pepper-testing
+run-network-host:
+	docker run --rm -it -p 6566:6566 -p 5000:5000 --network="host" -v /Users/giuseppepitruzzella/PepperGateway/Gateway/:/app/ --name gw pepper-testing

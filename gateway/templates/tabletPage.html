@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Microphone</title>
+    <link rel="stylesheet" href="/static/css/tabletPage.css">
+    <!-- <a href="https://www.flaticon.com/free-icons/microphone" title="microphone icons">Microphone icons created by Freepik - Flaticon</a> -->
+</head>
+<body>
+    <div>
+        <img id="mic" src="/static/img/Mic.png" alt="Microphone">
+    </div>
+
+    <script>
+        function getMicrophone(startRecording = true) {
+            if (startRecording) {
+                console.log("Eseguo fetch per iniziare ad ascoltare...")
+                fetch('http://192.168.1.153:5000/startListening')
+                    .then(data => console.log(data.text()))
+            } else {
+                console.log("Eseguo fetch per smettere di ascoltare...")
+                fetch('http://192.168.1.153:5000/stopListening')
+                    .then(data => console.log(data.text()))
+                    .then(data => appendMessage(data))
+            }
+        }
+
+        const mic = document.getElementById('mic');
+        let isRecording = false;
+        mic.addEventListener('click', () => {
+            console.log("Cliccato")
+            if (!isRecording) {
+                console.log("Inizio a registrare...")
+                mic.src = '/static/img/recordingMic.png';
+                getMicrophone();
+                isRecording = true;
+            } else {
+                console.log("Smetto di registrare...")
+                mic.src = '/static/img/Mic.png';
+                getMicrophone(false);
+                isRecording = false;
+            }
+        });
+    </script>
+</body>
+</html>

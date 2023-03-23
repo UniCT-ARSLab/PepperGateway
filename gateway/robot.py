@@ -1,3 +1,4 @@
+# -*- coding: UTF-8 -*-
 import qi
 import time
 import numpy
@@ -6,11 +7,16 @@ import speech_recognition
 import gtts
 import playsound
 import subprocess
-# import dance
 import socket
 import paramiko
 from scp import SCPClient
 from GPT import *
+import threading
+import config
+import subprocess
+import os
+import requests
+import json
 
 class Pepper:
     """
@@ -31,18 +37,22 @@ class Pepper:
 
     """
     def __init__(self, ip_address, port=9559):
+        # Connection to Pepper Robot
         self.session = qi.Session()
         self.session.connect("tcp://" + ip_address + ":" + str(port))
 
+        # Setting Up IP ADDRESS and PORT for Pepper
         self.ip_address = ip_address
         self.port = port
 
+        # Setting Up SSH Connection
         self.ssh = paramiko.SSHClient()
         self.ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
         self.ssh.load_system_host_keys()
-        self.ssh.connect(hostname=self.ip_address, username="nao", password="RoyRoy2009")
+        self.ssh.connect(hostname=self.ip_address, username=config.USERNAME, password=config.PASSWORD)
         self.scp = SCPClient(self.ssh.get_transport())
 
+        # Setting Up Services
         self.posture_service = self.session.service("ALRobotPosture")
         self.motion_service = self.session.service("ALMotion")
         self.tracker_service = self.session.service("ALTracker")
@@ -66,38 +76,130 @@ class Pepper:
         self.speech_service = self.session.service("ALSpeechRecognition")
         self.dialog_service = self.session.service("ALDialog")
         self.audio_recorder = self.session.service("ALAudioRecorder")
-
         self.slam_map = None
         self.localization = None
         self.camera_link = None
-
         self.recognizer = speech_recognition.Recognizer()
-
-        # It contains all saved point of interests
         self.point_of_interests = {}
+        self.set_security_distance(0.5)
+        # self.startTablet()
 
-        print("[INFO]: Robot is initialized at " + ip_address + ":" + str(port))
-        self.set_security_distance(0.01)
-
-        self.set_autonomous_life(True)
-
-        self.bot = GPT()
-
+        self.saveMessage = False # Flag to start to save message
+        self.MAX_BLOCK_RECOGNIZED = 3 # Max number of text blocks recognized
+        self.messageCounter = self.MAX_BLOCK_RECOGNIZED # Dinamically updated counter
+        self.finalMessage = "" # Final message recognized after keyword
         
-        # self.got_obst = False
-        # self.subscriber = self.memory_service.subscriber("Navigation/AvoidanceNavigator/ObstacleDetected")
-        # self.subscriber.signal.connect(self.obstacleDet)
+        print("[INFO]: Robot is initialized at " + ip_address + ":" + str(port))
+    
+    def startThread(self):
+        startStreamThread = threading.Thread(target=self.startStream, args=())
+        startStreamThread.setDaemon(True)
+        startStreamThread.start()
 
-    # def obstacleDet(self, position):
-    #     if position == []: #empty value
-    #         self.got_obst = False
-    #     elif not self.got_obst:
-    #         self.got_obst = True
-    #         print("Obstacle detected!")
-    #         self.tts_service.say("Obstacle detected!")
-    #         print(position)
+    def startMicrophone(self):
+        self.speech_service.setAudioExpression(False)
+        self.speech_service.setVisualExpression(False)
+        self.audio_recorder.stopMicrophonesRecording()
+        print("[INFO]: Robot is listening to you...")
+        self.audio_recorder.startMicrophonesRecording("/home/nao/speech.wav", "wav", 48000, (0, 0, 1, 0))
+        return "[INFO] Starting Microphone..."
 
-    def point_at(self, x, y, z, effector_name, frame):
+    def stopMicrophone(self):
+        self.audio_recorder.stopMicrophonesRecording()
+        print("[INFO]: Robot is not listening to you...")
+        self.download_file("speech.wav")
+        self.speech_service.setAudioExpression(True)
+        self.speech_service.setVisualExpression(True)
+        return self.speechToText("speech.wav")
+    
+    def startStream(self):
+        while True:
+            self.startMicrophone()
+            time.sleep(2)
+            self.stopMicrophone()
+            streamThread = threading.Thread(target=self.streamSpeechToText, args=["speech.wav"])
+            streamThread.setDaemon(True)
+            streamThread.start()
+            # self.streamSpeechToText("speech.wav")
+
+    def speechToText(self, audio_file):
+        audio_file = speech_recognition.AudioFile("tmp/" + audio_file)
+        with audio_file as source:
+            audio = self.recognizer.record(source)
+            recognized = self.recognizer.recognize_google(audio, language="it-IT", show_all=True)
+        print(recognized)
+        return recognized["alternative"][0]["transcript"] if recognized else ""
+    
+    def streamSpeechToText(self, audio_file): # [TODO]
+        payload = json.dumps({"data": "ciao"})
+        r = requests.post(url = "http://192.168.1.153:5000/getAnswer", data=payload)
+        print("Richiesta effettuata! : " + r)
+
+        textRecognized = self.speechToText(audio_file)
+        textRecognized = textRecognized.lower()
+        keywordsList = ["pepper", "peppe", "beppe", "chicco"]
+        if not self.saveMessage:
+            for keyword in keywordsList:
+                if keyword in textRecognized:
+                    print("[INFO]: Keyword recognized!]")
+                    self.messageCounter = self.MAX_BLOCK_RECOGNIZED
+                    self.saveMessage = True
+        else:
+            if self.messageCounter == 0: 
+                self.saveMessage = False
+                print("[INFO] FINAL Recognized : " + self.finalMessage)
+                r = requests.post(url = "http://0.0.0.0:5000/getAnswer", data = {"message" : self.finalMessage})
+                self.finalMessage = ""
+            else:
+                print("[INFO] TEMP Recognized : " + textRecognized)
+                self.messageCounter -= 1
+                self.finalMessage.append(textRecognized)
+
+    def startVideoStream(self):
+        self.set_autonomous_life(False)
+        CMD ="gst-launch-0.10 -v v4l2src device=/dev/video0 ! video/x-raw-yuv,width=640,height=480,framerate=30/1 ! ffmpegcolorspace ! jpegenc ! multipartmux! tcpserversink port=3000"
+        stdin, stdout, stderr = self.ssh.exec_command(CMD)
+        # os.system("vlc tcp://192.168.1.20:3000")
+
+    # [TODO] Capire perché a volte non carica alcuna pagina
+    def startTablet(self):
+        try:
+            URL = "http://" + config.MY_IP + ":5000/"
+            self.tablet_service.cleanWebview()
+            _ = self.tablet_service.showWebview("http://192.168.1.153:5000/tabletPage")
+            print(_)
+            time.sleep(3)
+            # self.tablet_service.executeJS(config.TABLET_JS_SCRIPT)
+            self.tablet_service.reloadPage(True)
+        except KeyboardInterrupt:
+            self.tablet_service.hideWebview()
+            self.tablet_service.cleanWebview()
+
+
+
+
+
+
+
+
+
+    # def getRecord(self, duration = 5):
+    #     self.set_awareness(False)
+    #     # self.set_autonomous_life(False)
+    #     self.say("Inizio ad ascoltare")
+    #     # recordCommand = "arecord -d" + str(duration) + "-f cd -t wav test.wav"
+    #     recordCommand = "arecord -d" + str(duration) + "-f cd -t wav test.wav"
+    #     stdin, stdout, stderr = self.ssh.exec_command(recordCommand)
+    #     time.sleep(duration)
+    #     self.say("Ho finito di ascoltare")
+    #     self.download_file("test.wav")
+    #     playCommand = "aplay test.wav"
+    #     stdin, stdout, stderr = self.ssh.exec_command(playCommand)
+    #     msg = self.speech_to_text("test.wav")
+    #     print(msg)
+
+
+    def pointAt(self, x, y, z, effector_name, frame):
         """
         Point end-effector in cartesian space
 
@@ -119,14 +221,17 @@ class Pepper:
         speed = 0.5     # 50 % of speed
         self.tracker_service.pointAt(effector_name, [x, y, z], frame, speed)
 
-    def move_forward(self, speed):
-        """
-        Move forward with certain speed
 
-        :param speed: Positive values forward, negative backwards
-        :type speed: float
-        """
-        self.motion_service.move(speed, 0, 0)
+
+
+
+
+
+
+
+
+
+
 
     def move_toward(self, x, y, theta):
         """
@@ -149,41 +254,6 @@ class Pepper:
         :type speed: float
         """
         self.motion_service.move(0, 0, speed)
-
-    def stop_moving(self):
-        """Stop robot from moving by `move_around` and `turn_around` methods"""
-        self.motion_service.stopMove()
-
-# ------------------------------------------
-
-    # def start_stream(self):
-    #     self.subscribe_camera(self.get_picked_camera(), 0, 30)
-    #     #self.thread_alive = True
-    #     while not self._stop_event.is_set():
-    #         #print(self.thread_alive)
-    #         if not self.stream_on == 1:
-    #             self._stop_event.wait(1)
-    #             continue
-    #         image = self.robot.get_camera_frame(show=False)
-    #         image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
-    #         image = cv2.resize(image, (320, 240))
-    #         im = Image.fromarray(image)
-    #         #name = "camera.jpg"
-    #         #im.save(name)
-
-    # def on_start_stream_clicked(self):
-    #     self.output_text("[INFO]: Starting camera stream.")
-    #     if self.stream_on == -1:
-    #         self.stream_on = 1
-    #         self.video_thread.start()
-    #     else:
-    #         self.stream_on = 1
-
-    # def on_stop_stream_clicked(self):
-    #     self.output_text("[INFO]: Stopping camera stream.")
-    #     self.stream_on = 0
-
-# ------------------------------------------
 
     def say(self, text):
         """
@@ -595,37 +665,38 @@ class Pepper:
 
         return image
 
-    def show_tablet_camera(self, text):
-        """
-        Show image from camera with SpeechToText annotation on the robot tablet
+    # def show_tablet_camera(self, text):
+    #     """
+    #     Show image from camera with SpeechToText annotation on the robot tablet
 
-        .. note:: For showing image on robot you will need to share a location via HTTPS and \
-        save the image to ./tmp.
+    #     .. note:: For showing image on robot you will need to share a location via HTTPS and \
+    #     save the image to ./tmp.
 
-        .. warning:: It has to be some camera subscribed and ./tmp folder in root directory \
-        exists for showing it on the robot.
+    #     .. warning:: It has to be some camera subscribed and ./tmp folder in root directory \
+    #     exists for showing it on the robot.
 
-        :Example:
+    #     :Example:
 
-        >>> pepper = Pepper("10.37.1.227")
-        >>> pepper.share_localhost("/Users/michael/Desktop/Pepper/tmp/")
-        >>> pepper.subscribe_camera("camera_top", 2, 30)
-        >>> while True:
-        >>>     pepper.show_tablet_camera("camera top")
-        >>>     pepper.tablet_show_web("http://10.37.2.241:8000/tmp/camera.png")
+    #     >>> pepper = Pepper("10.37.1.227")
+    #     >>> pepper.share_localhost("/Users/michael/Desktop/Pepper/tmp/")
+    #     >>> pepper.subscribe_camera("camera_top", 2, 30)
+    #     >>> while True:
+    #     >>>     pepper.show_tablet_camera("camera top")
+    #     >>>     pepper.tablet_show_web("http://10.37.2.241:8000/tmp/camera.png")
 
-        :param text: Question of the visual question answering
-        :type text: string
-        """
-        remote_ip = socket.gethostbyname(socket.gethostname())
-        image_raw = self.camera_device.getImageRemote(self.camera_link)
-        image = numpy.frombuffer(image_raw[6], numpy.uint8).reshape(image_raw[1], image_raw[0], 3)
-        image = cv2.resize(image, (800, 600))
-        cv2.putText(image, "Visual question answering", (30, 500), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 255), 2)
-        cv2.putText(image, "Question: " + text, (30, 550), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2)
-        cv2.imwrite("./tmp/camera.png", image)
+    #     :param text: Question of the visual question answering
+    #     :type text: string
+    #     """
+    #     remote_ip = socket.gethostbyname(socket.gethostname())
+    #     image_raw = self.camera_device.getImageRemote(self.camera_link)
+    #     image = numpy.frombuffer(image_raw[6], numpy.uint8).reshape(image_raw[1], image_raw[0], 3)
+    #     image = cv2.resize(image, (800, 600))
+    #     cv2.putText(image, "Visual question answering", (30, 500), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 255), 2)
+    #     cv2.putText(image, "Question: " + text, (30, 550), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2)
+    #     cv2.imwrite("./tmp/camera.png", image)
 
-        self.tablet_show_web("http://" + remote_ip + ":8000/tmp/camera.png")
+    #     # self.tablet_show_web("http://" + remote_ip + ":8000/tmp/camera.png")
+    #     self.tablet_service.showWebview("http://192.168.1.153:8000/tmp/camera.png")
 
     def set_security_distance(self, distance=0.05):
         """
@@ -644,243 +715,9 @@ class Pepper:
         self.motion_service.setOrthogonalSecurityDistance(distance)
         print("[INFO]: Security distance set to " + str(distance) + " m")
 
-    def move_head_down(self):
-        """Look down"""
-        self.motion_service.setAngles("HeadPitch", 0.46, 0.2)
-
-    def move_head_up(self):
-        """Look up"""
-        self.motion_service.setAngles("HeadPitch", -0.4, 0.2)
-
-    def move_to_circle(self, clockwise, t=10):
-        """
-        Move a robot into circle for specified time
-
-        .. note:: This example only count on time not finished circles.
-
-        >>> pepper.move_to_circle(clockwise=True, t=5)
-
-        :param clockwise: Specifies a direction to turn around
-        :type clockwise: bool
-        :param t: Time in seconds (default 10)
-        :type t: float
-        """
-        if clockwise:
-            self.motion_service.moveToward(0.5, 0.0, 0.6)
-        else:
-            self.motion_service.moveToward(0.5, 0.0, -0.6)
-        time.sleep(t)
-        self.motion_service.stopMove()
-
     def turn_off_leds(self):
         """Turn off the LEDs in robot's eyes"""
         self.blink_eyes([0, 0, 0])
-
-    def unsubscribe_effector(self):
-        """
-        Unsubscribe a end-effector after tracking some object
-
-        .. note:: It has to be done right after each tracking by hands.
-        """
-        self.tracker_service.unregisterAllTargets()
-        self.tracker_service.setEffector("None")
-        print("[INFO]: End-effector is unsubscribed")
-
-    def pick_a_volunteer(self):
-        """
-        Complex movement for choosing a random people.
-
-        If robot does not see any person it will automatically after several
-        seconds turning in one direction and looking for a human. When it detects
-        a face it will says 'I found a volunteer' and raise a hand toward
-        her/him and move forward. Then it get's into a default 'StandInit'
-        pose.
-
-        :Example:
-
-        >>> pepper.pick_a_volunteer()
-
-        """
-        volunteer_found = False
-        self.unsubscribe_effector()
-        self.stand()
-        self.say("Ho bisogno di un volontario.")
-
-        proxy_name = "FaceDetection" + str(numpy.random)
-
-        print("[INFO]: Pick a volunteer mode started")
-
-        while not volunteer_found:
-            wait = numpy.random.randint(500, 1500) / 1000
-            theta = numpy.random.randint(-10, 10)
-            self.turn_around(theta)
-            time.sleep(wait)
-            self.stop_moving()
-            self.stand()
-            self.face_detection_service.subscribe(proxy_name, 500, 0.0)
-            for memory in range(5):
-                time.sleep(0.5)
-                output = self.memory_service.getData("FaceDetected")
-                print("...")
-                if output and isinstance(output, list) and len(output) >= 2:
-                    print("Face detected")
-                    volunteer_found = True
-
-        self.say("Ho trovato un volontario!")
-        self.stand()
-        try:
-            self.tracker_service.registerTarget("Face", 0.15)
-            self.tracker_service.setMode("Move")
-            self.tracker_service.track("Face")
-            self.tracker_service.setEffector("RArm")
-            self.get_face_properties()
-        
-        except Exception as err:
-            print("ERRORE VOLONTARIO: ", err)
-
-        finally:
-            time.sleep(2)
-            self.unsubscribe_effector()
-            self.stand()
-            self.face_detection_service.unsubscribe(proxy_name)
-
-    @staticmethod
-    def share_localhost(folder):
-        """
-        Shares a location on localhost via HTTPS to Pepper be
-        able to reach it by subscribing to IP address of this
-        computer.
-
-        :Example:
-
-        >>> pepper.share_localhost("/Users/pepper/Desktop/web/")
-
-        :param folder: Root folder to share
-        :type folder: string
-        """
-        # TODO: Add some elegant method to kill a port if previously opened
-        subprocess.Popen(["cd", folder])
-        try:
-            subprocess.Popen(["python", "-m", "SimpleHTTPServer"])
-        except Exception as error:
-            subprocess.Popen(["python", "-m", "SimpleHTTPServer"])
-        print("[INFO]: HTTPS server successfully started")
-
-    def play_sound(self, sound):
-        """
-        Play a `mp3` or `wav` sound stored on Pepper
-
-        .. note:: This is working only for songs stored in robot.
-
-        :param sound: Absolute path to the sound
-        :type sound: string
-        """
-        print("[INFO]: Playing " + sound)
-        self.audio_service.playFile("/home/nao/" + sound)
-
-    def stop_sound(self):
-        """Stop sound"""
-        print("[INFO]: Stop playing the sound")
-        self.audio_service.stopAll()
-
-    def start_animation(self, animation):
-        """
-        Starts a animation which is stored on robot
-
-        .. seealso:: Take a look a the animation names in the robot \
-        http://doc.aldebaran.com/2-5/naoqi/motion/alanimationplayer.html#alanimationplayer
-
-        :param animation: Animation name
-        :type animation: string
-        :return: True when animation has finished
-        :rtype: bool
-        """
-        try:
-            animation_finished = self.animation_service.run("animations/[posture]/Gestures/" + animation, _async=True)
-            animation_finished.value()
-            return True
-        except Exception as error:
-            print(error)
-            return False
-
-    def start_behavior(self, behavior):
-        """
-        Starts a behavior stored on robot
-
-        :param behavior: Behavior name
-        :type behavior: string
-        """
-        self.behavior_service.startBehavior(behavior)
-    def stop_behavior(self, behavior):
-        """
-        Stop a behavior stored on robot
-
-        :param behavior: Behavior name
-        :type behavior: string
-        """
-        self.behavior_service.stopBehavior(behavior)
-
-
-    def stop_all_behavior(self):
-        self.behavior_service.stopAllBehaviors()
-    def list_behavior(self):
-        """Prints all installed behaviors on the robot"""
-        print(self.behavior_service.getBehaviorNames())
-
-    # def get_face_properties(self):
-    #     """
-    #     Gets all face properties from the tracked face in front of
-    #     the robot.
-
-    #     It tracks:
-    #     - Emotions (neutral, happy, surprised, angry and sad
-    #     - Age
-    #     - Gender
-
-    #     .. note:: It also have a feature that it substracts a 5 year if it talks to a female.
-
-    #     .. note:: If it cannot decide which gender the user is, it just greets her/him as "Hello human being"
-
-    #     ..warning:: To get this feature working `ALAutonomousLife` process is needed. In this methods it is \
-    #     called by default
-    #     """
-    #     self.autonomous_life_on()
-    #     emotions = ["neutral", "happy", "surprised", "angry", "sad"]
-    #     face_id = self.memory_service.getData("PeoplePerception/PeopleList")
-    #     recognized = None
-    #     try:
-    #         recognized = self.face_characteristic.analyzeFaceCharacteristics(face_id[0])
-    #     except Exception as error:
-    #         print("[ERROR]: Cannot find a face to analyze.")
-    #         self.say("I cannot recognize a face.")
-
-    #     if recognized:
-    #         properties = self.memory_service.getData("PeoplePerception/Person/" + str(face_id[0]) + "/ExpressionProperties")
-    #         gender = self.memory_service.getData("PeoplePerception/Person/" + str(face_id[0]) + "/GenderProperties")
-    #         age = self.memory_service.getData("PeoplePerception/Person/" + str(face_id[0]) + "/AgeProperties")
-
-    #         # Gender properties
-    #         if gender[1] > 0.4:
-    #             if gender[0] == 0:
-    #                 self.say("Hello lady!")
-    #             elif gender[0] == 1:
-    #                 self.say("Hello sir!")
-    #         else:
-    #             self.say("Hello human being!")
-
-    #         # Age properties
-    #         if gender[1] == 1:
-    #             self.say("You are " + str(int(age[0])) + " years old.")
-    #         else:
-    #             self.say("You look like " + str(int(age[0])) + " oops, I mean " + str(int(age[0]-5)))
-
-    #         # Emotion properties
-    #         emotion_index = (properties.index(max(properties)))
-
-    #         if emotion_index > 0.5:
-    #             self.say("I am quite sure your mood is " + emotions[emotion_index])
-    #         else:
-    #             self.say("I guess your mood is " + emotions[emotion_index])
 
     def listen_to(self, vocabulary):
         """
@@ -895,8 +732,10 @@ class Pepper:
         :return: Recognized phrase or words
         :rtype: string
         """
-        
-        self.set_language("Italian")
+        # self.speech_service.pause(False)
+        # self.speech_service.removeAllContext()
+
+        # self.speech_service.setLanguage("Italian")
         self.speech_service.pause(True)
         try:
             self.speech_service.setVocabulary(vocabulary, True)
@@ -906,12 +745,13 @@ class Pepper:
             self.speech_service.setVocabulary(vocabulary, True)
             self.speech_service.subscribe("Test_ASR")
         try:
-            print("[INFO]: Robot is listening to you...")
-            self.speech_service.pause(False)
-            time.sleep(4)
-            words = self.memory_service.getData("WordRecognized")
-            print("[INFO]: Robot understood: '" + words[0] + "'")
-            return words[0]
+            while True:
+                print("[INFO]: Robot is listening to you...")
+                self.speech_service.pause(False)
+                time.sleep(4)
+                words = self.memory_service.getData("WordRecognized")
+                print("[INFO]: Robot understood: '" + words[0] + "'")
+                # return words[0]
         except:
             pass
 
@@ -936,78 +776,8 @@ class Pepper:
         # msg = str(self.speech_to_text("speech.wav")["alternative"][1]["transcript"])
 
         return msg
-
-    def listen(self):
-        """
-        Wildcard speech recognition via internal Pepper engine
-
-        .. warning:: To get this proper working it is needed to disable or uninstall \
-        all application which can modify a vocabulary in a Pepper.
-
-        .. note:: Note this version only rely on time but not its internal speak processing \
-        this means that Pepper will 'bip' at the begining and the end of human speak \
-        but it is not taken a sound in between the beeps. Search for 'Robot is listening to \
-        you ... sentence in log console
-
-        :Example:
-
-        >>> words = pepper.listen()
-
-        :return: Speech to text
-        :rtype: string
-        """
-        self.speech_service.setAudioExpression(False)
-        self.speech_service.setVisualExpression(False)
-        self.audio_recorder.stopMicrophonesRecording()
-        print("[INFO]: Speech recognition is in progress. Say something.")
-        while True:
-            print(self.memory_service.getData("ALSpeechRecognition/Status"))
-            if self.memory_service.getData("ALSpeechRecognition/Status") == "SpeechDetected":
-                self.audio_recorder.startMicrophonesRecording("/home/nao/speech.wav", "wav", 48000, (0, 0, 1, 0))
-                print("[INFO]: Robot is listening to you")
-                time.sleep(10)
-                break
-
-        while True:
-            if self.memory_service.getData("ALSpeechRecognition/Status") == "EndOfProcess":
-                self.audio_recorder.stopMicrophonesRecording()
-                print("[INFO]: Robot is not listening to you")
-                break
-
-        self.download_file("speech.wav")
-        self.speech_service.setAudioExpression(True)
-        self.speech_service.setVisualExpression(True)
-
-        print(self.speech_to_text("speech.wav")["alternative"][1]["transcript"])
-        # print(self.speech_to_text("speech.wav"))
-        return "OK"
-
-    def ask_wikipedia(self):
-        """
-        Ask for question and then robot will say first two sentences from Wikipedia
-
-        ..warning:: Autonomous life has to be turned on to process audio
-        """
-        self.speech_service.setAudioExpression(False)
-        self.speech_service.setVisualExpression(False)
-        self.set_awareness(False)
-        self.say("Fammi una domanda")
-        question = self.listen()
-        self.say("I will tell you")
-        answer = tools.get_knowledge(question)
-        self.say(answer)
-        self.set_awareness(True)
-        self.speech_service.setAudioExpression(True)
-        self.speech_service.setVisualExpression(True)
-
-    def rename_robot(self):
-        """Change current name of the robot"""
-        choice = raw_input("Are you sure you would like to rename a robot? (yes/no)\n")
-        if choice == "yes":
-            new_name = raw_input("Enter a new name for the robot. Then it will reboot itself.\nName: ")
-            self.system_service.setRobotName(new_name)
-            self.restart_robot()
-
+    
+    # SSH Modules
     def upload_file(self, file_name):
         """
         Upload file to the home directory of the robot
@@ -1030,7 +800,7 @@ class Pepper:
         self.scp.get(file_name, local_path="tmp/" + file_name)
         print("[INFO]: File " + file_name + " downloaded")
         self.scp.close()
-    
+
     def get_maps(self, path = "/home/nao/.local/share/Explorer/"):
         """
         Get all maps from robot.
@@ -1042,30 +812,6 @@ class Pepper:
         all_maps = stdout.readlines()
         all_maps = [map.replace("\n", "") for map in all_maps]
         return all_maps
-    
-    def get_answer(self, question):
-        """
-        Get all answers from robot using external API.
-
-        :param question: Question to the robot
-        :type path: string
-        """
-        return self.bot.get_response(question)
-
-    def speech_to_text(self, audio_file):
-        """
-        Translate speech to text via Google Speech API
-
-        :param audio_file: Name of the audio (default `speech.wav`
-        :type audio_file: string
-        :return: Text of the speech
-        :rtype: string
-        """
-        audio_file = speech_recognition.AudioFile("tmp/" + audio_file)
-        with audio_file as source:
-            audio = self.recognizer.record(source)
-            recognized = self.recognizer.recognize_google(audio, language="it-IT", show_all=True)
-        return recognized
 
     def get_robot_name(self):
         """
@@ -1078,33 +824,56 @@ class Pepper:
         if name:
             self.say("Il mio nome e' " + name)
         return name
-
-    def hand(self, hand, close):
+    
+    def resetRecognition():
+        self.speech_service.unsubscribe("ASR_Engine")
+        self.speech_service.subscribe("ASR_Engine")
+        
+        # if ALS==False:
+        #     reset()
+    
+    def recognize_keyword(self, keyword):
         """
-        Close or open hand
+        Recognize a keyword from the vocabulary
 
-        :param hand: Which hand
-            - left
-            - right
-        :type hand: string
-        :param close: True if close, false if open
-        :type close: boolean
+        :param keyword: Keyword to recognize
+        :type keyword: string
+        :return: True if keyword is recognized, False otherwise
+        :rtype: boolean
         """
-        hand_id = None
-        if hand == "left":
-            hand_id = "LHand"
-        elif hand == "right":
-            hand_id = "RHand"
+        # Configurazione delle parole chiave da riconoscere
+        # vocabulary = ["Hello"]
+        # speech_recognition.setVocabulary(vocabulary, False)
+        self.set_awareness(True)
+        
 
-        if hand_id:
-            if close:
-                self.motion_service.setAngles(hand_id, 0.0, 0.2)
-                print("[INFO]: Hand " + hand + "is closed")
-            else:
-                self.motion_service.setAngles(hand_id, 1.0, 0.2)
-                print("[INFO]: Hand " + hand + "is opened")
-        else:
-            print("[INFO]: Cannot move a hand")
+        ALS = self.memory_service.getData("ALSpeechRecognition/ActiveListening")
+        print("Active Listening before: " + str(ALS))
+
+        self.speech_service.pause(True)
+        self.speech_service.setLanguage("English")
+        self.speech_service.setLanguage("Italian")
+        self.speech_service.setVocabulary([keyword], True)
+        self.speech_service.subscribe("Test_ASR")
+        # speech_recognition.onWordRecognized.connect(on_word_recognized)
+
+        ALS = self.memory_service.getData("ALSpeechRecognition/ActiveListening")
+        print("Active Listening after: " + str(ALS))
+
+        print("[INFO]: Robot is listening to you...")
+        time.sleep(4)
+        words = self.memory_service.getData("WordRecognized")
+        for w in words: print(w)
+        word_recognized = ''.join(e for e in words[0] if e.isalnum())
+
+        ALS = self.memory_service.getData("ALSpeechRecognition/ActiveListening")
+        print(ALS)
+
+        print("[INFO]: Robot understood: '" + word_recognized + "'")
+        if word_recognized == keyword:
+            self.say("Ho capito la parola chiave " + word_recognized)
+        self.speech_service.pause(False)
+        self.speech_service.unsubscribe("Test_ASR")
 
 class VirtualPepper:
     """Virtual robot for testing"""

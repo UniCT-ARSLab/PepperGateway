@@ -26,17 +26,18 @@ function createMessage(text, isUser = true) {
     return message;
 }
 
-function appendMessage(text, isUser = true) {
+function appendMessage(text = NaN, isUser = true) {
+    // Append message to chat after create it by createMessage()
+    if (text == NaN) text = document.getElementById('text').value;
+    console.log("appendMessage received: " + text);
     const messages = document.getElementById('messages');
     messages.append(createMessage(text, isUser));
     messages.scrollTop = messages.scrollHeight;
     document.getElementById('text').value = '';
+    if (isUser) getAnswer(text);
 }
 
-function sendMessage() {
-    const text = document.getElementById('text').value;
-    appendMessage(text)
-
+function getAnswer(text) { // Send text to server
     fetch('/getAnswer', {
         method: 'POST',
         headers: {
@@ -52,17 +53,21 @@ function sendMessage() {
 
 function getMicrophone(startRecording = true) {
     if (startRecording) {
+        console.log("[INFO] Call /startListening")
         fetch('/startListening')
             .then(data => console.log(data.text()))
+    } else {
+        console.log("[INFO] Call /stopListening")
+        fetch('/stopListening')
+            .then(data => data.text())
             .then(data => appendMessage(data))
-            .then(() => recordVoice());
     }
-    // else {
 }
 
 function recordVoice() {
     const ping = document.getElementById('ping');
     if (!ping) {
+        console.log("Inizio a registrare...")
         const div = document.getElementById('input-btn');
         const span = document.createElement('span');
         span.setAttribute("id", "ping")
@@ -72,6 +77,7 @@ function recordVoice() {
         div.prepend(span);
         getMicrophone();
     } else {
+        console.log("Smetto di registrare...")
         ping.remove();
         getMicrophone(false);
     }

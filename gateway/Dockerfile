@@ -2,8 +2,7 @@ FROM python:2.7
 WORKDIR /app
 COPY requirements.txt /app/requirements.txt
 
-# ENV PYTHONPATH "${PYTHONPATH}:/pynaoqi-python2.7-2.5.5.5-linux64/lib/python2.7/site-packages"
-ENV PYTHONPATH "${PYTHONPATH}:/app/pynaoqi-python2.7-2.5.5.5-linux64/lib/python2.7/site-packages"
+ENV PYTHONPATH "${PYTHONPATH}:/app/pynaoqi-python2.7-2.5.7.1-linux64/lib/python2.7/site-packages"
 ENV PEPPER_IP "192.168.1.20"
 ENV PORT = 9559
 ENV FLASK_APP="main.py"

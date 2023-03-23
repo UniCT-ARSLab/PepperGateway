@@ -1,0 +1,13 @@
+Inserire due nuovi joypad per il movimento della braccia. DA FARE?
+
+Caricare all'avvio ultima mappa e permettere caricamento tramite tasto. FATTELO TU CLICCANDO LOAD MAP SU explorationMode
+Salvare permanentemente il path dell'ultima mappa tracciata. FATTELO TU CLICCANDO LOAD MAP SU explorationMode
+
+Integrare schermata show map di joypadMode; 
+Correggere bug in joypadMode dati dal cambio di nome delle API; 
+Fix menu di explorationMode; FATTO
+Correggere possibile bug in exploreEnv relativo al return; 
+
+!!!
+Implementare utilizzo Webcam a cui viene applicato algoritmo tracciamento mano. Il tracciamento delle mano deve esser utile allo spostamento del robot.
+!!!

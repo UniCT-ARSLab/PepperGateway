@@ -32,28 +32,30 @@ class WebSocketCommunication(WebSocketApplication):
         if message is None:
             return
         message = json.loads(message)
+        print(message["data"])
         if pepper:
             if message['msg_type'] == 'move_forward':
-                print("linear_vel", message['data'])
+                print("Linear Speed : ", message['data'])
                 pepper.move_forward(message['data'])
             elif message['msg_type'] == 'rotate':
-                print("angular_vel",message['data'])
+                print("Angular Speed : ",message['data'])
                 pepper.turn_around(message['data'])
-            # elif message['msg_type'] == 'stream':
-            #     pepper.subscribe_camera("camera_top", 1, 15)
-            #     return pepper.get_camera_frame(True)
+            elif message['msg_type'] == 'arm':
+                print("Arm : ",message['data'])
+                pepper.pointAt(0.0, 0.0, message['data'], "RArm", 0)
 
     def on_close(self, reason):
         print("Connection closed!")
-
 
 class WebServer:
     def __init__(self, robot = None):
         global pepper
         pepper = robot
+        self.GPT = GPT(pepper)
         self.robot = robot    
         self.defineRoutes()
         self.startServer()
+        self.robot.startThread()
 
     def startServer(self):
         app.app_context().push()
@@ -66,6 +68,7 @@ class WebServer:
             ]),
             debug=False
         ).serve_forever()
+        print("[INFO] Server started!")
         # app.run(debug=True, host='0.0.0.0', port=5000)
         
     def defineRoutes(self):
@@ -100,6 +103,10 @@ class WebServer:
         def settingsPage():
             return render_template('settingsPage.html')
         
+        @app.route('/tabletPage')
+        def tabletPage():
+            return render_template('tabletPage.html')
+
         # Points of Interest
         @app.route('/add', methods=['POST'])
         def add():
@@ -125,6 +132,7 @@ class WebServer:
         @app.route('/get/<int:id>')
         def get(id):
             item = Target.query.filter_by(id=id).first()
+            # [TODO] Togli il commento e testa il funzionamento
             
             # self.robot.say("Eseguo lo spostamento verso " + item.text)
             # self.robot.robot_localization()
@@ -169,12 +177,22 @@ class WebServer:
         # Chat Mode
         @app.route('/getAnswer', methods=['POST'])
         def getAnswer():
-            question = json.loads(request.data)["data"]
-            return self.robot.get_answer(question)
+            print(request.data)
+            return
+            # return self.GPT.getResponse(json.loads(request.data)["data"])
 
         @app.route('/startListening', methods=['GET'])
         def startListening():
-            return self.robot._listen()
+            return self.robot.startMicrophone()
+    
+        @app.route('/stopListening', methods=['GET'])
+        def stopListening():
+            _ = self.robot.stopMicrophone()
+            print("[INFO] " + _)
+            return _
+        
+
+        
     
     
 

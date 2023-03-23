@@ -1,0 +1,32 @@
+html {
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    /* width: 100%;
+    height: 100vh;
+    overflow: hidden; */
+
+    font-family: "Inter", sans-serif;
+
+	background: linear-gradient(-45deg, #eca28b, #96b4ef, #e86e6e, #e8a87e);
+	background-size: 400% 400%;
+    -webkit-animation: animate 15s ease infinite;
+    -moz-animation: animate 15s ease infinite;
+    animation: animate 15s ease infinite;
+}
+
+#mic {
+    margin: 0;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    -ms-transform: translate(-50%, -50%);
+    transform: translate(-50%, -50%);
+    width: 10%;
+}
+
+#mic:hover {
+    cursor: pointer;
+}
