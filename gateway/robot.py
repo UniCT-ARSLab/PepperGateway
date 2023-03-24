@@ -88,10 +88,11 @@ class Pepper:
         self.MAX_BLOCK_RECOGNIZED = 3 # Max number of text blocks recognized
         self.messageCounter = self.MAX_BLOCK_RECOGNIZED # Dinamically updated counter
         self.finalMessage = "" # Final message recognized after keyword
-        
+        self.COUNTER = 0
+
         print("[INFO]: Robot is initialized at " + ip_address + ":" + str(port))
     
-    def startThread(self):
+    def startListeningThread(self):
         startStreamThread = threading.Thread(target=self.startStream, args=())
         startStreamThread.setDaemon(True)
         startStreamThread.start()
@@ -105,9 +106,12 @@ class Pepper:
         return "[INFO] Starting Microphone..."
 
     def stopMicrophone(self):
+        self.COUNTER += 1
+
         self.audio_recorder.stopMicrophonesRecording()
         print("[INFO]: Robot is not listening to you...")
         self.download_file("speech.wav")
+
         self.speech_service.setAudioExpression(True)
         self.speech_service.setVisualExpression(True)
         return self.speechToText("speech.wav")
@@ -131,10 +135,6 @@ class Pepper:
         return recognized["alternative"][0]["transcript"] if recognized else ""
     
     def streamSpeechToText(self, audio_file): # [TODO]
-        payload = json.dumps({"data": "ciao"})
-        r = requests.post(url = "http://192.168.1.153:5000/getAnswer", data=payload)
-        print("Richiesta effettuata! : " + r)
-
         textRecognized = self.speechToText(audio_file)
         textRecognized = textRecognized.lower()
         keywordsList = ["pepper", "peppe", "beppe", "chicco"]
@@ -153,7 +153,7 @@ class Pepper:
             else:
                 print("[INFO] TEMP Recognized : " + textRecognized)
                 self.messageCounter -= 1
-                self.finalMessage.append(textRecognized)
+                self.finalMessage += textRecognized
 
     def startVideoStream(self):
         self.set_autonomous_life(False)

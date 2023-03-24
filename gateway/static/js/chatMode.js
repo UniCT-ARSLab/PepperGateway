@@ -1,3 +1,38 @@
+async function setStreamMode(state) {
+    // fetch('/setStreamMode', {
+    //     method: 'POST',
+    //     headers: {
+    //         'Content-Type': 'application/json'
+    //     },
+    //     body: JSON.stringify({
+    //         data: state
+    //     })
+    // })
+    // .then(data => data.text())
+    // .then(data => console.log(data));
+    fetch('/setStreamMode')
+}
+
+function streamBtn() {
+    const buttonColor = document.getElementById('stream-btn');
+    const buttonMovement = document.getElementById('stream-span');
+    if (buttonColor.classList.contains("bg-red-400")) { // Button is on
+        buttonColor.classList.remove("bg-red-400");
+        buttonColor.classList.add("bg-gray-200");
+        buttonMovement.classList.remove("translate-x-3.5");
+        buttonMovement.classList.add("translate-x-0");
+        console.log("Making a call to start audio stream")
+        setStreamMode(false);
+    } else { // Button is off
+        buttonColor.classList.toggle("bg-gray-200");
+        buttonColor.classList.add("bg-red-400");
+        buttonMovement.classList.toggle("translate-x-0");
+        buttonMovement.classList.add("translate-x-3.5");
+        console.log("Making a call to stop audio stream")
+        setStreamMode(true);
+    }
+}
+
 function createMessage(text, isUser = true) {
     let message = document.createElement('div');
     let div = document.createElement('div');

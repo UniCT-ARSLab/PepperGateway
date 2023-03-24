@@ -4,6 +4,7 @@ from robot import *
 import config
 import time
 import json
+import threading
 from geventwebsocket import WebSocketApplication, WebSocketServer, Resource
 from geventwebsocket.handler import WebSocketHandler
 from gevent import pywsgi
@@ -51,11 +52,12 @@ class WebServer:
     def __init__(self, robot = None):
         global pepper
         pepper = robot
-        self.GPT = GPT(pepper)
+        # self.GPT = GPT(pepper)
         self.robot = robot    
+        # self.robot.startThread()
         self.defineRoutes()
-        self.startServer()
-        self.robot.startThread()
+        threading.Thread(target=self.startServer(), daemon=True).start()
+        
 
     def startServer(self):
         app.app_context().push()
@@ -68,7 +70,6 @@ class WebServer:
             ]),
             debug=False
         ).serve_forever()
-        print("[INFO] Server started!")
         # app.run(debug=True, host='0.0.0.0', port=5000)
         
     def defineRoutes(self):
@@ -177,9 +178,14 @@ class WebServer:
         # Chat Mode
         @app.route('/getAnswer', methods=['POST'])
         def getAnswer():
-            print(request.data)
-            return
+            print("Server : " + request.data)
+            return "OK"
             # return self.GPT.getResponse(json.loads(request.data)["data"])
+
+        @app.route('/setStreamMode', methods=['GET'])
+        def setStreamMode():
+            self.robot.startListeningThread()
+            return "[INFO] Stream mode started"
 
         @app.route('/startListening', methods=['GET'])
         def startListening():
