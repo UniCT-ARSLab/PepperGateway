@@ -52,7 +52,7 @@ class WebServer:
     def __init__(self, robot = None):
         global pepper
         pepper = robot
-        # self.GPT = GPT(pepper)
+        self.GPT = GPT(pepper)
         self.robot = robot    
         # self.robot.startThread()
         self.defineRoutes()
@@ -178,9 +178,8 @@ class WebServer:
         # Chat Mode
         @app.route('/getAnswer', methods=['POST'])
         def getAnswer():
-            print("Server : " + request.data)
-            return "OK"
-            # return self.GPT.getResponse(json.loads(request.data)["data"])
+            data = request.get_json()["message"]
+            return self.GPT.getResponse(data)
 
         @app.route('/setStreamMode', methods=['GET'])
         def setStreamMode():

@@ -5,7 +5,7 @@ PORT = 9559 # Port of the robot
 USERNAME = "nao" # Username of the robot
 PASSWORD = "RoyRoy2009" # Password of the robot
 KEYWORD = "Ciccio" # Keyword to activate the robot
-CHATGPT_API_KEY = "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" # API Key of ChatGPT
+CHATGPT_API_KEY = "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" # API Key of ChatGPT
 SETUP = """
         Ciao, da questo momento il tuo nome e' Pepper (o, in alternativa, Chicco), sei un robot da laboratorio e sei stato sviluppato da Giuseppe Pitruzzella, Federico Santoro e Corrado Santoro. 
         Ad ogni domanda, rispondi esclusivamente secondo un formato strutturato JSON che possegga le coppie chiavi-valore: "azione", "valore" e "risposta". 

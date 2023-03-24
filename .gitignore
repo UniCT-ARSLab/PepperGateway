@@ -2,3 +2,4 @@ bak
 .vscode
 *.pyc
 .DS_Store
+/Gateway/config.py

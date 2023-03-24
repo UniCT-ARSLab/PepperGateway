@@ -87,7 +87,7 @@ class Pepper:
         self.saveMessage = False # Flag to start to save message
         self.MAX_BLOCK_RECOGNIZED = 3 # Max number of text blocks recognized
         self.messageCounter = self.MAX_BLOCK_RECOGNIZED # Dinamically updated counter
-        self.finalMessage = "" # Final message recognized after keyword
+        self.finalMessage = "Pepper, " # Final message recognized after keyword
         self.COUNTER = 0
 
         print("[INFO]: Robot is initialized at " + ip_address + ":" + str(port))
@@ -102,36 +102,43 @@ class Pepper:
         self.speech_service.setVisualExpression(False)
         self.audio_recorder.stopMicrophonesRecording()
         print("[INFO]: Robot is listening to you...")
-        self.audio_recorder.startMicrophonesRecording("/home/nao/speech.wav", "wav", 48000, (0, 0, 1, 0))
+        # self.audio_recorder.startMicrophonesRecording("/home/nao/speech.wav", "wav", 48000, (0, 0, 1, 0))
+        self.audio_recorder.startMicrophonesRecording("/home/nao/speech" + str(self.COUNTER) + ".wav", "wav", 48000, (0, 0, 1, 0))
+        
         return "[INFO] Starting Microphone..."
 
-    def stopMicrophone(self):
-        self.COUNTER += 1
 
+    def stopMicrophone(self):
         self.audio_recorder.stopMicrophonesRecording()
         print("[INFO]: Robot is not listening to you...")
-        self.download_file("speech.wav")
+
+        FILE_NAME = "speech" + str(self.COUNTER) + ".wav"
+        self.download_file(FILE_NAME)        
+        self.ssh.exec_command('rm /home/nao/' + FILE_NAME)
+        
 
         self.speech_service.setAudioExpression(True)
         self.speech_service.setVisualExpression(True)
-        return self.speechToText("speech.wav")
+        streamThread = threading.Thread(target=self.streamSpeechToText, args=[FILE_NAME])
+        streamThread.setDaemon(True)
+        streamThread.start()
+
+        self.COUNTER += 1
+        # return self.speechToText("speech.wav")
     
     def startStream(self):
         while True:
             self.startMicrophone()
             time.sleep(2)
             self.stopMicrophone()
-            streamThread = threading.Thread(target=self.streamSpeechToText, args=["speech.wav"])
-            streamThread.setDaemon(True)
-            streamThread.start()
-            # self.streamSpeechToText("speech.wav")
 
-    def speechToText(self, audio_file):
-        audio_file = speech_recognition.AudioFile("tmp/" + audio_file)
+    def speechToText(self, AUDIO_FILE):
+        audio_file = speech_recognition.AudioFile("tmp/" + AUDIO_FILE)
         with audio_file as source:
             audio = self.recognizer.record(source)
             recognized = self.recognizer.recognize_google(audio, language="it-IT", show_all=True)
         print(recognized)
+        os.system("rm tmp/" + AUDIO_FILE)
         return recognized["alternative"][0]["transcript"] if recognized else ""
     
     def streamSpeechToText(self, audio_file): # [TODO]
@@ -149,7 +156,7 @@ class Pepper:
                 self.saveMessage = False
                 print("[INFO] FINAL Recognized : " + self.finalMessage)
                 r = requests.post(url = "http://0.0.0.0:5000/getAnswer", data = {"message" : self.finalMessage})
-                self.finalMessage = ""
+                self.finalMessage = "Pepper, "
             else:
                 print("[INFO] TEMP Recognized : " + textRecognized)
                 self.messageCounter -= 1
