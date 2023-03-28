@@ -10,14 +10,11 @@ class GPT():
     """
     **Chatter Bot for Pepper Robot (use ChatGPT API)**
     """
-    def __init__(self, pepper):
-        self.robot = pepper
+    def __init__(self):
         self.URL = "https://api.openai.com/v1/chat/completions"
         self.setup_string = config.SETUP
         self.payload = {
             "model": "gpt-3.5-turbo",
-            # "model": "text-davinci-003",
-            # "prompt": "Come ti chiami?",
             "messages": [],
             "temperature" : 1.0,
             "top_p":1.0,
@@ -25,16 +22,17 @@ class GPT():
             "stream": False,
             "presence_penalty":0,
             "frequency_penalty":0,
+            "max_tokens": 40,
         }
         self.headers = {
             "Content-Type": "application/json",
             "Authorization": "Bearer " + config.CHATGPT_API_KEY
         }
         print("[INFO]: Loading session...")
-        self.getResponse(question=self.setup_string, role="user", say=False)
+        self.getAnswer(question=self.setup_string, role="user")
         print("[INFO]: Init GPT-3.5 Turbo completed!")
     
-    def getResponse(self, question, role = "user", say = True):
+    def getAnswer(self, question, role = "user"):
         """
         Get all answers from robot using ChatGPT API.
 
@@ -48,7 +46,6 @@ class GPT():
         self.payload['messages'].append(response['choices'][0]["message"])
         data = response['choices'][0]["message"]["content"]
         cleanResponse = re.sub("\s\s+" , " ", data)
-        if say: self.robot.say(cleanResponse)
         return cleanResponse
 
 

@@ -30,7 +30,6 @@ function autonomousBtn() {
         buttonMovement.classList.add("translate-x-3.5");
         console.log("Autonomous is now on, make a call to the server to turn on")
         setAutonomousState(true);
-        
     }
 }
 

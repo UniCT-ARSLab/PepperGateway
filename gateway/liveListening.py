@@ -3,7 +3,12 @@ import argparse
 import sys
 import time
 import numpy as np
+import requests
+import time
 
+THRESHOLD = 5
+MAX_FRAME_TO_PROCESS = 20
+MAX_FRAME_LESS_THAN_THRESHOLD = 10
 
 class SoundProcessingModule(object):
     """
@@ -17,15 +22,21 @@ class SoundProcessingModule(object):
         """
         super(SoundProcessingModule, self).__init__()
         app.start()
-        session = app.session
+        self.session = app.session
 
         # Get the service ALAudioDevice.
-        self.audio_service = session.service("ALAudioDevice")
+        self.audio_service = self.session.service("ALAudioDevice")
+        self.speech_service = self.session.service("ALSpeechRecognition")
+        self.audio_recorder = self.session.service("ALAudioRecorder")
         self.isProcessingDone = False
         self.nbOfFramesToProcess = 20
         self.framesCount=0
         self.micFront = []
         self.module_name = "SoundProcessingModule"
+
+        self.isRecording = False
+        self.timeOut = 0
+        self.COUNTER = 0
 
     def startProcessing(self):
         """
@@ -36,7 +47,7 @@ class SoundProcessingModule(object):
         self.audio_service.setClientPreferences(self.module_name, 16000, 3, 0)
         self.audio_service.subscribe(self.module_name)
 
-        while self.isProcessingDone == False:
+        while True:
             time.sleep(1)
 
         self.audio_service.unsubscribe(self.module_name)
@@ -45,23 +56,38 @@ class SoundProcessingModule(object):
         """
         Compute RMS from mic.
         """
-        self.framesCount = self.framesCount + 1
+        self.micFront=self.convertStr2SignedInt(inputBuffer)
+        rmsMicFront = self.calcRMSLevel(self.micFront)
+        if rmsMicFront > THRESHOLD: self.COUNTER = 0
 
-        if (self.framesCount <= self.nbOfFramesToProcess):
-            # convert inputBuffer to signed integer as it is interpreted as a string by python
-            self.micFront=self.convertStr2SignedInt(inputBuffer)
-            #compute the rms level on front mic
-            rmsMicFront = self.calcRMSLevel(self.micFront)
-            print("rms level mic front = " + str(rmsMicFront))
-        else :
-            self.isProcessingDone=True
+        if (rmsMicFront > THRESHOLD
+            and not self.isRecording 
+            and self.timeOut < MAX_FRAME_TO_PROCESS):
+            self.isRecording = True
+            print("[INFO] Start recording...")
+            requests.get("http://192.168.1.153:5000/startListening")
+
+        if (self.timeOut == MAX_FRAME_TO_PROCESS or self.COUNTER == MAX_FRAME_LESS_THAN_THRESHOLD and self.isRecording):
+            print("[INFO] Reset values...")
+            self.timeOut = 0 if self.timeOut == MAX_FRAME_TO_PROCESS else self.timeOut + 1
+            self.COUNTER = 0 if self.timeOut == MAX_FRAME_LESS_THAN_THRESHOLD or rmsMicFront <= THRESHOLD else self.COUNTER + 1
+            self.isRecording = False
+            print("[INFO] Stop recording...")
+
+            requests.get("http://192.168.1.153:5000/stopListening")
+            time.sleep(1)
+            textRecognized = requests.get("http://192.168.1.153:5000/getSpeech")
+
+        elif self.isRecording: self.timeOut += 1
+
+        print("RMS: " + str(rmsMicFront) + " COUNTER: " + str(self.COUNTER) + " TIMEOUT: " + str(self.timeOut) + " ISRECORDING: " + str(self.isRecording))
 
     def calcRMSLevel(self,data) :
         """
         Calculate RMS level
         """
-        # rms = 20 * np.log10( np.sqrt( np.sum( np.power(data,2) / len(data)  )))
-        # return rms
+        RMS = 100 * (np.sqrt(np.mean(np.square(data))))
+        return RMS
 
     def convertStr2SignedInt(self, data) :
         """

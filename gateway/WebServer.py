@@ -41,7 +41,10 @@ class WebSocketCommunication(WebSocketApplication):
             elif message['msg_type'] == 'rotate':
                 print("Angular Speed : ",message['data'])
                 pepper.turn_around(message['data'])
-            elif message['msg_type'] == 'arm':
+            elif message['msg_type'] == 'arm_x':
+                print("Arm : ",message['data'])
+                pepper.pointAt(0.0, message['data'], 0.0, "RArm", 0)
+            elif message['msg_type'] == 'arm_y':
                 print("Arm : ",message['data'])
                 pepper.pointAt(0.0, 0.0, message['data'], "RArm", 0)
 
@@ -49,12 +52,12 @@ class WebSocketCommunication(WebSocketApplication):
         print("Connection closed!")
 
 class WebServer:
-    def __init__(self, robot = None):
+    def __init__(self, robot = None, GPT = None):
         global pepper
         pepper = robot
-        self.GPT = GPT(pepper)
-        self.robot = robot    
-        # self.robot.startThread()
+
+        self.GPT = GPT # Use this istance of GPT to handle text messages
+        self.robot = robot
         self.defineRoutes()
         threading.Thread(target=self.startServer(), daemon=True).start()
         
@@ -75,8 +78,6 @@ class WebServer:
     def defineRoutes(self):
         @app.route('/')
         def index():
-            # self.robot.load_map("/home/nao/.local/share/Explorer/2014-04-04T030832.649Z.explo")
-            # self.robot.exploration_mode(10)
             targetList = Target.query.all() # SELECT * FROM target;
             return render_template('index.html', targetList=targetList)
 
@@ -178,12 +179,21 @@ class WebServer:
         # Chat Mode
         @app.route('/getAnswer', methods=['POST'])
         def getAnswer():
-            data = request.get_json()["message"]
-            return self.GPT.getResponse(data)
+            data = json.loads(request.data)
+            data = data.get("data") # {data : "message"}
+            response = self.robot.getAnswer(data) # I change this from self.GPT.getAnswer(data) to self.robot.getAnswer(data)
+            print("[INFO] Response from GPT : ", response)
+            self.robot.say(response)
+            #return json.dumps(response)
+            return {"data" : response}
+        
+        @app.route('/getSpeech', methods=['GET'])
+        def getSpeech():
+            return self.robot.speechToText(getAnswer = True)
 
         @app.route('/setStreamMode', methods=['GET'])
         def setStreamMode():
-            self.robot.startListeningThread()
+            self.robot.startStreamingSpeech()
             return "[INFO] Stream mode started"
 
         @app.route('/startListening', methods=['GET'])
@@ -192,10 +202,22 @@ class WebServer:
     
         @app.route('/stopListening', methods=['GET'])
         def stopListening():
-            _ = self.robot.stopMicrophone()
-            print("[INFO] " + _)
-            return _
+            self.robot.stopMicrophone()
+            return self.robot.speechToText("speech.wav")
         
+        @app.route('/liveListening', methods=['GET'])
+        def liveListening():
+            # Alla fine dei giochi, live listening esegue solo lo script corrado.py all'interno del robot mediante ssh
+            self.robot.say("Attivo modalita' Live!")
+            self.robot.liveListening()
+            return "[INFO] Live listening started"
+        
+        @app.route('/TEST', methods=['POST'])
+        def TEST():
+            self.robot.say("Test passed")
+            state = json.loads(request.data)
+            return state["data"]
+             
 
         
     

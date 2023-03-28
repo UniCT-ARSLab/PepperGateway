@@ -1,29 +1,18 @@
 async function setStreamMode(state) {
-    // fetch('/setStreamMode', {
-    //     method: 'POST',
-    //     headers: {
-    //         'Content-Type': 'application/json'
-    //     },
-    //     body: JSON.stringify({
-    //         data: state
-    //     })
-    // })
-    // .then(data => data.text())
-    // .then(data => console.log(data));
-    fetch('/setStreamMode')
+    await fetch('/setStreamMode')
 }
 
 function streamBtn() {
     const buttonColor = document.getElementById('stream-btn');
     const buttonMovement = document.getElementById('stream-span');
-    if (buttonColor.classList.contains("bg-red-400")) { // Button is on
+    if (buttonColor.classList.contains("bg-red-400")) { // Turn it off
         buttonColor.classList.remove("bg-red-400");
         buttonColor.classList.add("bg-gray-200");
         buttonMovement.classList.remove("translate-x-3.5");
         buttonMovement.classList.add("translate-x-0");
         console.log("Making a call to start audio stream")
         setStreamMode(false);
-    } else { // Button is off
+    } else { // Turn it on
         buttonColor.classList.toggle("bg-gray-200");
         buttonColor.classList.add("bg-red-400");
         buttonMovement.classList.toggle("translate-x-0");
@@ -61,10 +50,9 @@ function createMessage(text, isUser = true) {
     return message;
 }
 
-function appendMessage(text = NaN, isUser = true) {
+function appendMessage(text, isUser = true) {
     // Append message to chat after create it by createMessage()
-    if (text == NaN) text = document.getElementById('text').value;
-    console.log("appendMessage received: " + text);
+    console.log("[INFO] Append message: " + text);
     const messages = document.getElementById('messages');
     messages.append(createMessage(text, isUser));
     messages.scrollTop = messages.scrollHeight;
@@ -73,6 +61,7 @@ function appendMessage(text = NaN, isUser = true) {
 }
 
 function getAnswer(text) { // Send text to server
+    console.log("[INFO] Call /getAnswer for text: " + text)
     fetch('/getAnswer', {
         method: 'POST',
         headers: {
@@ -82,9 +71,12 @@ function getAnswer(text) { // Send text to server
             data: text
         })
     })
-    .then(data => data.text())
-    .then(res => { appendMessage(res, false) })
+    .then(response => response.json())
+    .then(response => JSON.stringify(response["data"]))
+    .then(response => appendMessage(response.replace(/"|'/g, ''), false))
 }
+
+
 
 function getMicrophone(startRecording = true) {
     if (startRecording) {

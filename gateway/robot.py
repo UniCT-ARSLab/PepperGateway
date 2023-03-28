@@ -17,6 +17,10 @@ import subprocess
 import os
 import requests
 import json
+import functools
+
+AUDIO_TRACK_DURATION = 4
+DEFAULT_AUDIO_FILE_NAME = "speech.wav"
 
 class Pepper:
     """
@@ -36,7 +40,7 @@ class Pepper:
     >>> pepper = Pepper("192.169.0.1", 1234)
 
     """
-    def __init__(self, ip_address, port=9559):
+    def __init__(self, ip_address, port=9559, GPT = None):
         # Connection to Pepper Robot
         self.session = qi.Session()
         self.session.connect("tcp://" + ip_address + ":" + str(port))
@@ -82,128 +86,77 @@ class Pepper:
         self.recognizer = speech_recognition.Recognizer()
         self.point_of_interests = {}
         self.set_security_distance(0.5)
-        # self.startTablet()
+        self.autonomousLifeState = True # Init Autonomous Life State
+        # self.setAutonomousLife(False) # Disable Autonomous Life
+        self.setupTouch() # Setup React to Touch Event
 
-        self.saveMessage = False # Flag to start to save message
-        self.MAX_BLOCK_RECOGNIZED = 3 # Max number of text blocks recognized
-        self.messageCounter = self.MAX_BLOCK_RECOGNIZED # Dinamically updated counter
-        self.finalMessage = "Pepper, " # Final message recognized after keyword
-        self.COUNTER = 0
+        self.GPT = GPT # Use this istance of GPT to handle vocal messages
 
         print("[INFO]: Robot is initialized at " + ip_address + ":" + str(port))
-    
-    def startListeningThread(self):
-        startStreamThread = threading.Thread(target=self.startStream, args=())
-        startStreamThread.setDaemon(True)
-        startStreamThread.start()
+
+    def liveListening(self, isOpen = False):
+        if not isOpen:
+            stdin, stdout, stderr = self.ssh.exec_command('python /home/nao/liveListening.py')
+        else: self.ssh.exec_command(chr(3))
+
+    def getAnswer(self, message):
+        return self.say(self.GPT.getAnswer(message))
+
+    def setupTouch(self):
+        self.touch = self.memory_service.subscriber("TouchChanged")
+        self.id = self.touch.signal.connect(functools.partial(self.onTouched, "TouchChanged"))
+
+    def onTouched(self, strVarName, bodyValues):
+        # Disconnect to the event when talking, to avoid repetitions
+        self.touch.signal.disconnect(self.id)
+        touchedBodies = []
+        for partValues in bodyValues:
+            if partValues[0] == "Head": 
+                if partValues[1]: # If touched
+                    self.startMicrophone()
+                else: # If released
+                    self.stopMicrophone()
+                    self.getAnswer(self.speechToText(DEFAULT_AUDIO_FILE_NAME))
+            touchedBodies.append(partValues[0])
+        # Reconnect again to the event
+        self.id = self.touch.signal.connect(functools.partial(self.onTouched, "TouchChanged"))
 
     def startMicrophone(self):
-        self.speech_service.setAudioExpression(False)
-        self.speech_service.setVisualExpression(False)
-        self.audio_recorder.stopMicrophonesRecording()
-        print("[INFO]: Robot is listening to you...")
-        # self.audio_recorder.startMicrophonesRecording("/home/nao/speech.wav", "wav", 48000, (0, 0, 1, 0))
-        self.audio_recorder.startMicrophonesRecording("/home/nao/speech" + str(self.COUNTER) + ".wav", "wav", 48000, (0, 0, 1, 0))
-        
+        print("[INFO]: Starting Microphone...")
+        self.speech_service.setAudioExpression(False) # Disable audio expression
+        self.speech_service.setVisualExpression(False) # Disable visual expression
+        self.audio_recorder.stopMicrophonesRecording() # Stop any previous recording
+        self.audio_recorder.startMicrophonesRecording("/home/nao/speech.wav", "wav", 48000, (0, 0, 1, 0))
         return "[INFO] Starting Microphone..."
-
-
+    
     def stopMicrophone(self):
+        print("[INFO]: Stopping Microphone...")
         self.audio_recorder.stopMicrophonesRecording()
-        print("[INFO]: Robot is not listening to you...")
-
-        FILE_NAME = "speech" + str(self.COUNTER) + ".wav"
-        self.download_file(FILE_NAME)        
-        self.ssh.exec_command('rm /home/nao/' + FILE_NAME)
-        
-
+        self.download_file("speech.wav")
         self.speech_service.setAudioExpression(True)
         self.speech_service.setVisualExpression(True)
-        streamThread = threading.Thread(target=self.streamSpeechToText, args=[FILE_NAME])
-        streamThread.setDaemon(True)
-        streamThread.start()
-
-        self.COUNTER += 1
-        # return self.speechToText("speech.wav")
     
-    def startStream(self):
-        while True:
-            self.startMicrophone()
-            time.sleep(2)
-            self.stopMicrophone()
-
-    def speechToText(self, AUDIO_FILE):
-        audio_file = speech_recognition.AudioFile("tmp/" + AUDIO_FILE)
+    def speechToText(self, audio_file = "speech.wav", getAnswer = False):
+        audio_file = speech_recognition.AudioFile("tmp/" + audio_file)
         with audio_file as source:
             audio = self.recognizer.record(source)
             recognized = self.recognizer.recognize_google(audio, language="it-IT", show_all=True)
-        print(recognized)
-        os.system("rm tmp/" + AUDIO_FILE)
-        return recognized["alternative"][0]["transcript"] if recognized else ""
-    
-    def streamSpeechToText(self, audio_file): # [TODO]
-        textRecognized = self.speechToText(audio_file)
-        textRecognized = textRecognized.lower()
-        keywordsList = ["pepper", "peppe", "beppe", "chicco"]
-        if not self.saveMessage:
-            for keyword in keywordsList:
-                if keyword in textRecognized:
-                    print("[INFO]: Keyword recognized!]")
-                    self.messageCounter = self.MAX_BLOCK_RECOGNIZED
-                    self.saveMessage = True
-        else:
-            if self.messageCounter == 0: 
-                self.saveMessage = False
-                print("[INFO] FINAL Recognized : " + self.finalMessage)
-                r = requests.post(url = "http://0.0.0.0:5000/getAnswer", data = {"message" : self.finalMessage})
-                self.finalMessage = "Pepper, "
-            else:
-                print("[INFO] TEMP Recognized : " + textRecognized)
-                self.messageCounter -= 1
-                self.finalMessage += textRecognized
+        if recognized:
+            recognizedText = recognized["alternative"][0]["transcript"]
+            print("[INFO] Google Speech Recognition : " + recognizedText)
+            if getAnswer: return self.getAnswer(recognizedText)
+        else: recognizedText = "[ERROR]"
+        return recognizedText
 
-    def startVideoStream(self):
-        self.set_autonomous_life(False)
-        CMD ="gst-launch-0.10 -v v4l2src device=/dev/video0 ! video/x-raw-yuv,width=640,height=480,framerate=30/1 ! ffmpegcolorspace ! jpegenc ! multipartmux! tcpserversink port=3000"
-        stdin, stdout, stderr = self.ssh.exec_command(CMD)
+    def videoStream(self, isOpen = False):
+        if not isOpen:
+            self.setAutonomousLife(False)
+            CMD ="gst-launch-0.10 -v v4l2src device=/dev/video0 ! video/x-raw-yuv,width=640,height=480,framerate=30/1 ! ffmpegcolorspace ! jpegenc ! multipartmux! tcpserversink port=3000"
+            stdin, stdout, stderr = self.ssh.exec_command(CMD)
+        else: 
+            stdin, stdout, stderr = self.ssh.exec_command("ps ax | grep corrado.py")
+            print(stdout)
         # os.system("vlc tcp://192.168.1.20:3000")
-
-    # [TODO] Capire perché a volte non carica alcuna pagina
-    def startTablet(self):
-        try:
-            URL = "http://" + config.MY_IP + ":5000/"
-            self.tablet_service.cleanWebview()
-            _ = self.tablet_service.showWebview("http://192.168.1.153:5000/tabletPage")
-            print(_)
-            time.sleep(3)
-            # self.tablet_service.executeJS(config.TABLET_JS_SCRIPT)
-            self.tablet_service.reloadPage(True)
-        except KeyboardInterrupt:
-            self.tablet_service.hideWebview()
-            self.tablet_service.cleanWebview()
-
-
-
-
-
-
-
-
-
-    # def getRecord(self, duration = 5):
-    #     self.set_awareness(False)
-    #     # self.set_autonomous_life(False)
-    #     self.say("Inizio ad ascoltare")
-    #     # recordCommand = "arecord -d" + str(duration) + "-f cd -t wav test.wav"
-    #     recordCommand = "arecord -d" + str(duration) + "-f cd -t wav test.wav"
-    #     stdin, stdout, stderr = self.ssh.exec_command(recordCommand)
-    #     time.sleep(duration)
-    #     self.say("Ho finito di ascoltare")
-    #     self.download_file("test.wav")
-    #     playCommand = "aplay test.wav"
-    #     stdin, stdout, stderr = self.ssh.exec_command(playCommand)
-    #     msg = self.speech_to_text("test.wav")
-    #     print(msg)
 
 
     def pointAt(self, x, y, z, effector_name, frame):
@@ -225,7 +178,7 @@ class Pepper:
         :param frame: 0 = Torso, 1 = World, 2 = Robot
         :type frame: integer
         """
-        speed = 0.5     # 50 % of speed
+        speed = 0.1     # 50 % of speed
         self.tracker_service.pointAt(effector_name, [x, y, z], frame, speed)
 
 
@@ -271,65 +224,27 @@ class Pepper:
         """
         self.tts_service.say(text)
         print("[INFO]: Robot says: " + text)
+        return text
 
-    def set_autonomous_life(self, state):
+    def getAutonomousLife(self):
+        return self.autonomousLifeState
+
+    def setAutonomousLife(self, STATE):
         """
         Set autonomous life on or off
 
         .. note:: After switching off, robot stays in resting posture. After \
         turning autonomous life default posture is invoked
         """
-        if state:
+        if STATE:
             self.autonomous_life_service.setState("interactive")
-            print("[AUTONOMOUS LIFE]", self.autonomous_life_service.getState())
-            return "[INFO]: Autonomous life is on"
-        self.autonomous_life_service.setState("disabled")
-        self.motion_service.wakeUp()
-        return "[INFO]: Autonomous life is off"
-
-    def track_object(self, object_name, effector_name, diameter=0.05):
-        """
-        Track a object with a given object type and diameter. If `Face` is
-        chosen it has a default parameters to 15 cm diameter per face. After
-        staring tracking in will wait until user press ctrl+c.
-
-        .. seealso:: For more info about tracking modes, object names and other:\
-        http://doc.aldebaran.com/2-5/naoqi/trackers/index.html#tracking-modes
-
-        :Example:
-
-        >>> pepper.track_object("Face", "Arms")
-
-        Or
-
-        >>> pepper.track_object("RedBall", "LArm", diameter=0.1)
-
-        :param object_name: `RedBall`, `Face`, `LandMark`, `LandMarks`, `People` or `Sound`
-        :param effector_name: `LArm`, `RArm`, `Arms`
-        :param diameter: Diameter of the object (default 0.05, for face default 0.15)
-        """
-        if object == "Face":
-            self.tracker_service.registerTarget(object_name, 0.15)
+            self.autonomousLifeState = True
         else:
-            self.tracker_service.registerTarget(object_name, diameter)
-
-        self.tracker_service.setMode("Move")
-        self.tracker_service.track(object_name)
-        self.tracker_service.setEffector(effector_name)
-
-        self.say("Show me a " + object_name)
-        print("[INFO]: Use Ctrl+c to stop tracking")
-
-        try:
-            while True:
-                time.sleep(1)
-        except KeyboardInterrupt:
-            print("[INFO]: Interrupted by user")
-            self.say("Stopping to track a " + object_name)
-
-        self.tracker_service.stopTracker()
-        self.unsubscribe_effector()
-        self.say("Let's do something else!")
+            self.autonomous_life_service.setState("disabled")
+            self.motion_service.wakeUp()
+            self.autonomousLifeState = False
+        print("[AUTONOMOUS LIFE]", self.autonomous_life_service.getState())
+        return "Autonomous Life is " + self.autonomous_life_service.getState()
 
     def save_map(self):
         """
@@ -672,39 +587,6 @@ class Pepper:
 
         return image
 
-    # def show_tablet_camera(self, text):
-    #     """
-    #     Show image from camera with SpeechToText annotation on the robot tablet
-
-    #     .. note:: For showing image on robot you will need to share a location via HTTPS and \
-    #     save the image to ./tmp.
-
-    #     .. warning:: It has to be some camera subscribed and ./tmp folder in root directory \
-    #     exists for showing it on the robot.
-
-    #     :Example:
-
-    #     >>> pepper = Pepper("10.37.1.227")
-    #     >>> pepper.share_localhost("/Users/michael/Desktop/Pepper/tmp/")
-    #     >>> pepper.subscribe_camera("camera_top", 2, 30)
-    #     >>> while True:
-    #     >>>     pepper.show_tablet_camera("camera top")
-    #     >>>     pepper.tablet_show_web("http://10.37.2.241:8000/tmp/camera.png")
-
-    #     :param text: Question of the visual question answering
-    #     :type text: string
-    #     """
-    #     remote_ip = socket.gethostbyname(socket.gethostname())
-    #     image_raw = self.camera_device.getImageRemote(self.camera_link)
-    #     image = numpy.frombuffer(image_raw[6], numpy.uint8).reshape(image_raw[1], image_raw[0], 3)
-    #     image = cv2.resize(image, (800, 600))
-    #     cv2.putText(image, "Visual question answering", (30, 500), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 255), 2)
-    #     cv2.putText(image, "Question: " + text, (30, 550), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2)
-    #     cv2.imwrite("./tmp/camera.png", image)
-
-    #     # self.tablet_show_web("http://" + remote_ip + ":8000/tmp/camera.png")
-    #     self.tablet_service.showWebview("http://192.168.1.153:8000/tmp/camera.png")
-
     def set_security_distance(self, distance=0.05):
         """
         Set security distance. Lower distance for passing doors etc.
@@ -725,64 +607,6 @@ class Pepper:
     def turn_off_leds(self):
         """Turn off the LEDs in robot's eyes"""
         self.blink_eyes([0, 0, 0])
-
-    def listen_to(self, vocabulary):
-        """
-        Listen and match the vocabulary which is passed as parameter.
-
-        :Example:
-
-        >>> words = pepper.listen_to(["what color is the sky", "yes", "no"]
-
-        :param vocabulary: List of phrases or words to recognize
-        :type vocabulary: string
-        :return: Recognized phrase or words
-        :rtype: string
-        """
-        # self.speech_service.pause(False)
-        # self.speech_service.removeAllContext()
-
-        # self.speech_service.setLanguage("Italian")
-        self.speech_service.pause(True)
-        try:
-            self.speech_service.setVocabulary(vocabulary, True)
-        except RuntimeError as error:
-            print(error)
-            self.speech_service.removeAllContext()
-            self.speech_service.setVocabulary(vocabulary, True)
-            self.speech_service.subscribe("Test_ASR")
-        try:
-            while True:
-                print("[INFO]: Robot is listening to you...")
-                self.speech_service.pause(False)
-                time.sleep(4)
-                words = self.memory_service.getData("WordRecognized")
-                print("[INFO]: Robot understood: '" + words[0] + "'")
-                # return words[0]
-        except:
-            pass
-
-    def _listen(self):
-        self.speech_service.setAudioExpression(False)
-        self.speech_service.setVisualExpression(False)
-        self.audio_recorder.stopMicrophonesRecording()
-        print("[INFO]: Robot is listening to you...")
-        self.audio_recorder.startMicrophonesRecording("/home/nao/speech.wav", "wav", 48000, (0, 0, 1, 0))
-        time.sleep(10)
-        self.audio_recorder.stopMicrophonesRecording()
-        print("[INFO]: Robot is not listening to you...")
-
-        self.download_file("speech.wav")
-        self.speech_service.setAudioExpression(True)
-        self.speech_service.setVisualExpression(True)
-
-        # msg = self.speech_to_text("speech.wav")["alternative"][0]["transcript"]
-        msg = self.speech_to_text("speech.wav")
-        print(msg)
-        # msg = msg["alternative"][0]["transcript"]
-        # msg = str(self.speech_to_text("speech.wav")["alternative"][1]["transcript"])
-
-        return msg
     
     # SSH Modules
     def upload_file(self, file_name):
