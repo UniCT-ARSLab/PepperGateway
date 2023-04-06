@@ -5,6 +5,7 @@ import time
 import numpy as np
 import requests
 import time
+import signal
 
 THRESHOLD = 5
 MAX_FRAME_TO_PROCESS = 20
@@ -33,10 +34,12 @@ class SoundProcessingModule(object):
         self.framesCount=0
         self.micFront = []
         self.module_name = "SoundProcessingModule"
-
+        
         self.isRecording = False
         self.timeOut = 0
         self.COUNTER = 0
+
+        signal.signal(signal.SIGTERM, self.exitGracefully)
 
     def startProcessing(self):
         """
@@ -109,7 +112,12 @@ class SoundProcessingModule(object):
             signedData[i]=signedData[i]/32768.0
 
         return signedData
-
+    
+    def exitGracefully(self, signum, frame):
+        print("[QUIT]: Gracefully exit...")
+        print(requests.get("http://192.168.1.153:5000/stopMicrophone"))
+        self.audio_service.unsubscribe(self.module_name)
+        sys.exit(0)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()

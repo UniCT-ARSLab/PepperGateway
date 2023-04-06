@@ -1,24 +1,33 @@
-async function setStreamMode(state) {
-    await fetch('/setStreamMode')
+async function setLiveListening(STATE) {
+    fetch('/setLiveListening', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            data: STATE
+        })
+    })
 }
 
-function streamBtn() {
+function setLiveBtn() {
     const buttonColor = document.getElementById('stream-btn');
     const buttonMovement = document.getElementById('stream-span');
-    if (buttonColor.classList.contains("bg-red-400")) { // Turn it off
+    let isOpen = buttonColor.classList.contains("bg-red-400")
+    if (isOpen) { // Turn it off
         buttonColor.classList.remove("bg-red-400");
         buttonColor.classList.add("bg-gray-200");
         buttonMovement.classList.remove("translate-x-3.5");
         buttonMovement.classList.add("translate-x-0");
         console.log("Making a call to start audio stream")
-        setStreamMode(false);
+        setLiveListening(true)
     } else { // Turn it on
         buttonColor.classList.toggle("bg-gray-200");
         buttonColor.classList.add("bg-red-400");
         buttonMovement.classList.toggle("translate-x-0");
         buttonMovement.classList.add("translate-x-3.5");
         console.log("Making a call to stop audio stream")
-        setStreamMode(true);
+        setLiveListening(false)
     }
 }
 
@@ -76,8 +85,6 @@ function getAnswer(text) { // Send text to server
     .then(response => appendMessage(response.replace(/"|'/g, ''), false))
 }
 
-
-
 function getMicrophone(startRecording = true) {
     if (startRecording) {
         console.log("[INFO] Call /startListening")
@@ -92,8 +99,8 @@ function getMicrophone(startRecording = true) {
 }
 
 function recordVoice() {
-    const ping = document.getElementById('ping');
-    if (!ping) {
+    const isRecording = document.getElementById('ping');
+    if (!isRecording) {
         console.log("Inizio a registrare...")
         const div = document.getElementById('input-btn');
         const span = document.createElement('span');
@@ -105,7 +112,7 @@ function recordVoice() {
         getMicrophone();
     } else {
         console.log("Smetto di registrare...")
-        ping.remove();
+        isRecording.remove();
         getMicrophone(false);
     }
 }

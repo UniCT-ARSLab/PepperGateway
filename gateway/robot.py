@@ -87,10 +87,12 @@ class Pepper:
         self.point_of_interests = {}
         self.set_security_distance(0.5)
         self.autonomousLifeState = True # Init Autonomous Life State
-        # self.setAutonomousLife(False) # Disable Autonomous Life
+        self.PID = None
+        self.setAutonomousLife(True)
         self.setupTouch() # Setup React to Touch Event
 
         self.GPT = GPT # Use this istance of GPT to handle vocal messages
+        self.uploadOnRobot("liveListening.py")
 
         print("[INFO]: Robot is initialized at " + ip_address + ":" + str(port))
 
@@ -122,19 +124,18 @@ class Pepper:
         self.id = self.touch.signal.connect(functools.partial(self.onTouched, "TouchChanged"))
 
     def startMicrophone(self):
-        print("[INFO]: Starting Microphone...")
         self.speech_service.setAudioExpression(False) # Disable audio expression
         self.speech_service.setVisualExpression(False) # Disable visual expression
         self.audio_recorder.stopMicrophonesRecording() # Stop any previous recording
         self.audio_recorder.startMicrophonesRecording("/home/nao/speech.wav", "wav", 48000, (0, 0, 1, 0))
         return "[INFO] Starting Microphone..."
     
-    def stopMicrophone(self):
-        print("[INFO]: Stopping Microphone...")
+    def stopMicrophone(self, download = True):
         self.audio_recorder.stopMicrophonesRecording()
-        self.download_file("speech.wav")
+        if download: self.download_file("speech.wav") # look at this!!!
         self.speech_service.setAudioExpression(True)
         self.speech_service.setVisualExpression(True)
+        return "[INFO] Stopping Microphone..."
     
     def speechToText(self, audio_file = "speech.wav", getAnswer = False):
         audio_file = speech_recognition.AudioFile("tmp/" + audio_file)
@@ -147,6 +148,17 @@ class Pepper:
             if getAnswer: return self.getAnswer(recognizedText)
         else: recognizedText = "[ERROR]"
         return recognizedText
+    
+    def setLiveListening(self, isOpen = False):
+        if not isOpen:
+            self.setAutonomousLife(False)
+            CMD ="python /home/nao/liveListening.py & echo $!"
+            stdin, stdout, stderr = self.ssh.exec_command(CMD)
+            self.PID = stdout.readline()
+            print("[START] PID: " + self.PID)
+        else:
+            print("[KILL] PID: " + self.PID)
+            stdin, stdout, stderr = self.ssh.exec_command("kill " + self.PID)
 
     def videoStream(self, isOpen = False):
         if not isOpen:
@@ -180,18 +192,6 @@ class Pepper:
         """
         speed = 0.1     # 50 % of speed
         self.tracker_service.pointAt(effector_name, [x, y, z], frame, speed)
-
-
-
-
-
-
-
-
-
-
-
-
 
     def move_toward(self, x, y, theta):
         """
@@ -245,6 +245,10 @@ class Pepper:
             self.autonomousLifeState = False
         print("[AUTONOMOUS LIFE]", self.autonomous_life_service.getState())
         return "Autonomous Life is " + self.autonomous_life_service.getState()
+    
+    def getAutonomousLife(self):
+        print("[AUTONOMOUS] " + str(self.autonomousLifeState))
+        return str(self.autonomousLifeState)
 
     def save_map(self):
         """
@@ -461,15 +465,15 @@ class Pepper:
         self.ssh.exec_command('rm ' + file_path + file_name)
         print("[INFO]: Map '" + file_name + "' deleted")
     
-    def set_volume(self, volume):
-        """
-        Set robot volume in percentage
+    # def set_volume(self, volume):
+    #     """
+    #     Set robot volume in percentage
 
-        :param volume: From 0 to 100 %
-        :type volume: integer
-        """
-        self.audio_device.setOutputVolume(volume)
-        self.say("Volume is set to " + str(volume) + " percent")
+    #     :param volume: From 0 to 100 %
+    #     :type volume: integer
+    #     """
+    #     self.audio_device.setOutputVolume(volume)
+    #     self.say("Volume is set to " + str(volume) + " percent")
 
     def battery_status(self):
         """Say a battery status"""
@@ -609,7 +613,7 @@ class Pepper:
         self.blink_eyes([0, 0, 0])
     
     # SSH Modules
-    def upload_file(self, file_name):
+    def uploadOnRobot(self, file_name):
         """
         Upload file to the home directory of the robot
 

@@ -174,17 +174,20 @@ class WebServer:
         @app.route('/setAutonomous', methods=['POST'])
         def setAutonomous():
             state = json.loads(request.data)
-            return self.robot.set_autonomous_life(state["data"])
+            return self.robot.setAutonomousLife(state["data"])
+        
+        @app.route('/getAutonomous', methods=['GET'])
+        def getAutonomous():
+            return self.robot.getAutonomousLife()
 
         # Chat Mode
         @app.route('/getAnswer', methods=['POST'])
         def getAnswer():
             data = json.loads(request.data)
             data = data.get("data") # {data : "message"}
-            response = self.robot.getAnswer(data) # I change this from self.GPT.getAnswer(data) to self.robot.getAnswer(data)
+            response = self.robot.getAnswer(data) # [LOOK] I change this from self.GPT.getAnswer(data) to self.robot.getAnswer(data)
             print("[INFO] Response from GPT : ", response)
-            self.robot.say(response)
-            #return json.dumps(response)
+            # self.robot.say(response) # [LOOK] Commented this line
             return {"data" : response}
         
         @app.route('/getSpeech', methods=['GET'])
@@ -199,24 +202,37 @@ class WebServer:
         @app.route('/startListening', methods=['GET'])
         def startListening():
             return self.robot.startMicrophone()
+        
+        @app.route('/stopMicrophone', methods=['GET'])
+        def stopMicrophone():
+            return self.robot.stopMicrophone()
     
         @app.route('/stopListening', methods=['GET'])
         def stopListening():
             self.robot.stopMicrophone()
             return self.robot.speechToText("speech.wav")
         
-        @app.route('/liveListening', methods=['GET'])
-        def liveListening():
-            # Alla fine dei giochi, live listening esegue solo lo script corrado.py all'interno del robot mediante ssh
-            self.robot.say("Attivo modalita' Live!")
-            self.robot.liveListening()
-            return "[INFO] Live listening started"
+        # @app.route('/liveListening', methods=['GET'])
+        # def liveListening():
+        #     # Alla fine dei giochi, live listening esegue solo lo script corrado.py all'interno del robot mediante ssh
+        #     self.robot.say("Attivo modalita' Live!")
+        #     self.robot.liveListening()
+        #     return "[INFO] Live listening started"
         
-        @app.route('/TEST', methods=['POST'])
-        def TEST():
-            self.robot.say("Test passed")
-            state = json.loads(request.data)
-            return state["data"]
+        @app.route('/setLiveListening', methods=['POST'])
+        def setLiveListening():
+            print("[INFO] Test passed")
+            isOpen = json.loads(request.data)["data"]
+            if not isOpen:
+                print("[INFO] Live listening started...")
+                self.robot.say("Attivo modalita' Live!")
+                self.robot.liveListening()
+            else:
+                print("[INFO] Live listening stopped...")
+                self.robot.say("Disattivo modalita' Live!")
+                self.robot.liveListening(isOpen = True)
+            return "[SUCCESS] Live listening setted correctly"
+
              
 
         
