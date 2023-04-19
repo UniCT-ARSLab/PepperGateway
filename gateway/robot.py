@@ -85,7 +85,7 @@ class Pepper:
         self.camera_link = None
         self.recognizer = speech_recognition.Recognizer()
         self.point_of_interests = {}
-        self.set_security_distance(0.5)
+        self.set_security_distance(0.1)
         self.autonomousLifeState = True # Init Autonomous Life State
         self.PID = None
         self.setAutonomousLife(True)
@@ -102,14 +102,17 @@ class Pepper:
         else: self.ssh.exec_command(chr(3))
 
     def getAnswer(self, message):
+        print("[CHAT_GPT] " + message)
         return self.say(self.GPT.getAnswer(message))
 
     def setupTouch(self):
+        print("[SETUP]: Setting up Touch Event")
         self.touch = self.memory_service.subscriber("TouchChanged")
         self.id = self.touch.signal.connect(functools.partial(self.onTouched, "TouchChanged"))
 
     def onTouched(self, strVarName, bodyValues):
         # Disconnect to the event when talking, to avoid repetitions
+        print("[TOUCH]: Event Triggered")
         self.touch.signal.disconnect(self.id)
         touchedBodies = []
         for partValues in bodyValues:
@@ -128,23 +131,24 @@ class Pepper:
         self.speech_service.setVisualExpression(False) # Disable visual expression
         self.audio_recorder.stopMicrophonesRecording() # Stop any previous recording
         self.audio_recorder.startMicrophonesRecording("/home/nao/speech.wav", "wav", 48000, (0, 0, 1, 0))
-        return "[INFO] Starting Microphone..."
+        return "[START] Microphone"
     
     def stopMicrophone(self, download = True):
         self.audio_recorder.stopMicrophonesRecording()
         if download: self.download_file("speech.wav") # look at this!!!
         self.speech_service.setAudioExpression(True)
         self.speech_service.setVisualExpression(True)
-        return "[INFO] Stopping Microphone..."
+        return "[END] Microphone"
     
     def speechToText(self, audio_file = "speech.wav", getAnswer = False):
+        print("[GSR] Event Triggered")
         audio_file = speech_recognition.AudioFile("tmp/" + audio_file)
         with audio_file as source:
             audio = self.recognizer.record(source)
             recognized = self.recognizer.recognize_google(audio, language="it-IT", show_all=True)
         if recognized:
             recognizedText = recognized["alternative"][0]["transcript"]
-            print("[INFO] Google Speech Recognition : " + recognizedText)
+            print("[GSR] Google Speech Recognition : " + recognizedText)
             if getAnswer: return self.getAnswer(recognizedText)
         else: recognizedText = "[ERROR]"
         return recognizedText
@@ -223,7 +227,7 @@ class Pepper:
         :type text: string
         """
         self.tts_service.say(text)
-        print("[INFO]: Robot says: " + text)
+        print("[SAY]: Robot says: " + text)
         return text
 
     def getAutonomousLife(self):
@@ -287,7 +291,7 @@ class Pepper:
 
         robot_map = cv2.resize(img, None, fx=1, fy=1, interpolation=cv2.INTER_CUBIC)
 
-        print("[INFO]: Showing the map")
+        print("[MAP]: Showing the map")
         cv2.imwrite("./static/img/latest_map.png", robot_map)
 
     def move_forward(self, speed):
@@ -607,10 +611,6 @@ class Pepper:
         """
         self.motion_service.setOrthogonalSecurityDistance(distance)
         print("[INFO]: Security distance set to " + str(distance) + " m")
-
-    def turn_off_leds(self):
-        """Turn off the LEDs in robot's eyes"""
-        self.blink_eyes([0, 0, 0])
     
     # SSH Modules
     def uploadOnRobot(self, file_name):
@@ -621,7 +621,7 @@ class Pepper:
         :type file_name: string
         """
         self.scp.put(file_name)
-        print("[INFO]: File " + file_name + " uploaded")
+        print("[SSH]: UPLOAD " + file_name)
         self.scp.close()
 
     def download_file(self, file_name):
@@ -633,7 +633,7 @@ class Pepper:
         :type file_name: string
         """
         self.scp.get(file_name, local_path="tmp/" + file_name)
-        print("[INFO]: File " + file_name + " downloaded")
+        print("[SSH]: DOWNLOAD " + file_name)
         self.scp.close()
 
     def get_maps(self, path = "/home/nao/.local/share/Explorer/"):
@@ -659,56 +659,6 @@ class Pepper:
         if name:
             self.say("Il mio nome e' " + name)
         return name
-    
-    def resetRecognition():
-        self.speech_service.unsubscribe("ASR_Engine")
-        self.speech_service.subscribe("ASR_Engine")
-        
-        # if ALS==False:
-        #     reset()
-    
-    def recognize_keyword(self, keyword):
-        """
-        Recognize a keyword from the vocabulary
-
-        :param keyword: Keyword to recognize
-        :type keyword: string
-        :return: True if keyword is recognized, False otherwise
-        :rtype: boolean
-        """
-        # Configurazione delle parole chiave da riconoscere
-        # vocabulary = ["Hello"]
-        # speech_recognition.setVocabulary(vocabulary, False)
-        self.set_awareness(True)
-        
-
-        ALS = self.memory_service.getData("ALSpeechRecognition/ActiveListening")
-        print("Active Listening before: " + str(ALS))
-
-        self.speech_service.pause(True)
-        self.speech_service.setLanguage("English")
-        self.speech_service.setLanguage("Italian")
-        self.speech_service.setVocabulary([keyword], True)
-        self.speech_service.subscribe("Test_ASR")
-        # speech_recognition.onWordRecognized.connect(on_word_recognized)
-
-        ALS = self.memory_service.getData("ALSpeechRecognition/ActiveListening")
-        print("Active Listening after: " + str(ALS))
-
-        print("[INFO]: Robot is listening to you...")
-        time.sleep(4)
-        words = self.memory_service.getData("WordRecognized")
-        for w in words: print(w)
-        word_recognized = ''.join(e for e in words[0] if e.isalnum())
-
-        ALS = self.memory_service.getData("ALSpeechRecognition/ActiveListening")
-        print(ALS)
-
-        print("[INFO]: Robot understood: '" + word_recognized + "'")
-        if word_recognized == keyword:
-            self.say("Ho capito la parola chiave " + word_recognized)
-        self.speech_service.pause(False)
-        self.speech_service.unsubscribe("Test_ASR")
 
 class VirtualPepper:
     """Virtual robot for testing"""
