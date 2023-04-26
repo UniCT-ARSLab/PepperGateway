@@ -134,11 +134,9 @@ class WebServer:
         @app.route('/get/<int:id>')
         def get(id):
             item = Target.query.filter_by(id=id).first()
-            # [TODO] Togli il commento e testa il funzionamento
-            
-            # self.robot.say("Eseguo lo spostamento verso " + item.text)
-            # self.robot.robot_localization()
-            # self.robot.navigate_to(item.x, item.y, item.theta)
+            self.robot.say("Eseguo lo spostamento verso " + item.text)
+            self.robot.robot_localization()
+            self.robot.navigate_to(item.x, item.y, item.theta)
             return redirect(url_for('pointsOfInterest'))
 
         # Exploration Mode

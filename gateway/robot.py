@@ -61,7 +61,7 @@ class Pepper:
         self.motion_service = self.session.service("ALMotion")
         self.tracker_service = self.session.service("ALTracker")
         self.tts_service = self.session.service("ALAnimatedSpeech")
-        self.tablet_service = self.session.service("ALTabletService")
+        # self.tablet_service = self.session.service("ALTabletService")
         self.autonomous_life_service = self.session.service("ALAutonomousLife")
         self.system_service = self.session.service("ALSystem")
         self.navigation_service = self.session.service("ALNavigation")
@@ -101,9 +101,30 @@ class Pepper:
             stdin, stdout, stderr = self.ssh.exec_command('python /home/nao/liveListening.py')
         else: self.ssh.exec_command(chr(3))
 
+    def parseGPT(self, response):
+        print("PARSING >>>")
+        response = json.loads(response)
+        print(response)
+        if (response["action"]):
+            print("[ACTION] Eseguo lo spostamento")
+            self.say("Eseguo lo spostamento")
+
+            if (str(response["value"]).isdigit()):
+                print("[ACTION] Spostamento di metri uguale a " + str(response["value"]))
+                self.move_forward(int(response["value"])) # TODO - Spostamento indietro
+            else: 
+                print("[ACTION] Spostamento verso il punto: " + response["value"])
+                # Riceve lista dei punti di interesse dal Server
+        print("<<< PARSING")
+
+        return str(response["response"])
+
     def getAnswer(self, message):
-        print("[CHAT_GPT] " + message)
-        return self.say(self.GPT.getAnswer(message))
+        print("[CHAT_GPT] Question: " + message)
+        response = self.GPT.getAnswer(message)
+        print("[CHAT_GPT] Response: " + response)
+        response = self.parseGPT(response)
+        return self.say(response)
 
     def setupTouch(self):
         print("[SETUP]: Setting up Touch Event")

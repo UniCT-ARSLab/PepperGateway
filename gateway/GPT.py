@@ -15,7 +15,7 @@ class GPT():
         self.setup_string = config.SETUP
         self.payload = {
             "model": "gpt-3.5-turbo",
-            "messages": [],
+            "messages": config.SETUP_MESSAGES,
             "temperature" : 1.0,
             "top_p":1.0,
             "n" : 1,
@@ -39,13 +39,15 @@ class GPT():
         :param question: Question to the robot
         :type path: string
         """
-        new_message = {"role": role, "content": question}
-        self.payload['messages'].append(new_message)
-        self.payload['messages'][0]['content'] = question
-        response = requests.post(self.URL, headers=self.headers, json=self.payload, stream=False).json()
-        self.payload['messages'].append(response['choices'][0]["message"])
-        data = response['choices'][0]["message"]["content"]
-        cleanResponse = re.sub("\s\s+" , " ", data)
-        return cleanResponse
-
-
+        try: 
+            new_message = {"role": role, "content": question}
+            self.payload['messages'].append(new_message)
+            self.payload['messages'][0]['content'] = question
+            response = requests.post(self.URL, headers=self.headers, json=self.payload, stream=False).json()
+            self.payload['messages'].append(response['choices'][0]["message"])
+            data = response['choices'][0]["message"]["content"]
+            cleanResponse = re.sub("\s\s+" , " ", data)
+            return cleanResponse
+        except KeyError as e:
+            print("[ERROR]: Error in GPT API. Try Again!")
+            return "Error"
