@@ -97,13 +97,13 @@
                             <p class="mt-6 text-lg leading-8 text-gray-600 sm:text-center">Stabilisci tutti i tuoi punti d'interesse in relazione alla mappa caricata all'interno di Pepper.</p>
                             <div class="mt-8 flex gap-x-4 sm:justify-center">
                                 <div class="relative overflow-x-auto shadow-md sm:rounded-lg">
-                                    <form action="/add" method="post">
-                                        <label for="default-search" class="mb-2 text-sm font-medium text-gray-900 sr-only dark:text-white">Add a point of interest...</label>
+                                    <div>
+                                        <label for="default-search" class="mb-2 text-sm font-medium text-gray-900 sr-only">Set name for your new point...</label>
                                         <div class="relative">
-                                            <input type="search" id="default-search" class="block w-full p-4 pl-10 text-sm text-gray-900 rounded-lg bg-gray-50 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white" placeholder="Add a point of interest..." required>
-                                            <button type="submit" class="text-blue-700 absolute right-2.5 bottom-2 bg-white-700 font-medium rounded-lg text-sm px-4 py-2 dark:bg-blue-600">Add</button>
+                                            <input type="text" id="point-name" name="radius" class="block w-full p-4 pl-10 text-sm text-gray-900 rounded-lg bg-gray-50" placeholder="Set name for your new point..." required>
+                                            <button type="submit" class="text-blue-700 absolute right-2.5 bottom-2 bg-white-700 font-medium rounded-lg text-sm px-4 py-2" onclick="savePoint()">Save</button>
                                         </div>
-                                    </form>
+                                    </div>
                                     
                                     <table class="w-full text-sm text-left text-gray-500 dark:text-gray-400">
                                         <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-white-700 dark:text-gray-400">
@@ -155,5 +155,6 @@
         </main>
     </div>
     <script src="/static/js/indexScript.js"></script>
+    <script src="/static/js/pointsOfInterest.js"></script>
 </body>
 </html>

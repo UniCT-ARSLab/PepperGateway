@@ -84,8 +84,7 @@ class Pepper:
         self.localization = None
         self.camera_link = None
         self.recognizer = speech_recognition.Recognizer()
-        self.point_of_interests = {}
-        self.set_security_distance(0.1)
+        self.set_security_distance(0.5)
         self.autonomousLifeState = True # Init Autonomous Life State
         self.PID = None
         self.setAutonomousLife(True)
@@ -93,8 +92,12 @@ class Pepper:
 
         self.GPT = GPT # Use this istance of GPT to handle vocal messages
         self.uploadOnRobot("liveListening.py")
+        self.map_name = None
 
         print("[INFO]: Robot is initialized at " + ip_address + ":" + str(port))
+
+    def getMap(self):
+        return self.map_name
 
     def liveListening(self, isOpen = False):
         if not isOpen:
@@ -103,21 +106,34 @@ class Pepper:
 
     def parseGPT(self, response):
         print("PARSING >>>")
-        response = json.loads(response)
-        print(response)
-        if (response["action"]):
-            print("[ACTION] Eseguo lo spostamento")
-            self.say("Eseguo lo spostamento")
-
-            if (str(response["value"]).isdigit()):
-                print("[ACTION] Spostamento di metri uguale a " + str(response["value"]))
-                self.move_forward(int(response["value"])) # TODO - Spostamento indietro
-            else: 
-                print("[ACTION] Spostamento verso il punto: " + response["value"])
-                # Riceve lista dei punti di interesse dal Server
-        print("<<< PARSING")
-
-        return str(response["response"])
+        try:
+            response = json.loads(response)
+            print(response)
+            if (response["action"] == "move"):
+                print("[ACTION] Eseguo lo spostamento")                
+                if (str(response["value"]).isdigit() or str(response["value"])[1:].isdigit()):
+                    print("[ACTION] Spostamento di metri uguale a " + str(response["value"]))
+                    self.move_toward(int(response["value"]), 0, 0) # TODO - Spostamento indietro
+                else:
+                    if (self.map_name == None):
+                        print("[ERROR] Nessuna mappa caricata")
+                        return "Errore, nessuna mappa caricata"
+                    else:
+                        print("[ACTION] Spostamento verso il punto: " + str(response["value"]))
+                        # Riceve lista dei punti di interesse dal Server
+                        with open("points.txt", "r") as f:
+                            lines = f.readlines()
+                            for line in lines:
+                                line = json.loads(line)                                
+                                if str(line["name"]).lower() == str(response["value"]).lower():
+                                    print("[ACTION] Punto trovato nella mappa, effettuo lo spostamento")
+                                    self.navigate_to(line["x"], line["y"], line["theta"])
+                                    self.say("Punto trovato nella mappa, effettuo lo spostamento")
+                                    break
+            return str(response["response"])
+        except ValueError:
+            print("[ERROR] JSON Parsing Error")
+            return response
 
     def getAnswer(self, message):
         print("[CHAT_GPT] Question: " + message)
@@ -137,6 +153,7 @@ class Pepper:
         self.touch.signal.disconnect(self.id)
         touchedBodies = []
         for partValues in bodyValues:
+            print(partValues)
             if partValues[0] == "Head": 
                 if partValues[1]: # If touched
                     self.startMicrophone()
@@ -471,6 +488,7 @@ class Pepper:
         :type file_path: string
         """
         self.slam_map = self.navigation_service.loadExploration(file_path + file_name)
+        self.map_name = file_name
         print("[INFO]: Map '" + file_name + "' loaded")
 
     def delete_map(self, file_name, file_path="/home/nao/.local/share/Explorer/"):

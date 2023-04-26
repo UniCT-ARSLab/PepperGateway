@@ -41,12 +41,6 @@ class WebSocketCommunication(WebSocketApplication):
             elif message['msg_type'] == 'rotate':
                 print("Angular Speed : ",message['data'])
                 pepper.turn_around(message['data'])
-            elif message['msg_type'] == 'arm_x':
-                print("Arm : ",message['data'])
-                pepper.pointAt(0.0, message['data'], 0.0, "RArm", 0)
-            elif message['msg_type'] == 'arm_y':
-                print("Arm : ",message['data'])
-                pepper.pointAt(0.0, 0.0, message['data'], "RArm", 0)
 
     def on_close(self, reason):
         print("Connection closed!")
@@ -112,17 +106,36 @@ class WebServer:
         # Points of Interest
         @app.route('/add', methods=['POST'])
         def add():
-            target_name = request.form.get('target_name')
+            target_name = json.loads(request.data)["data"]
+            self.robot.say("Salvo il nuovo punto di interesse: " + str(target_name))
+            print("[POINT] Add new point: " + str(target_name))
+            self.robot.robot_localization() # Get robot localization in the map
 
-            self.robot.robot_localization()
-            item = Target(text=target_name, 
-                x=self.robot.localization[0], 
-                y=self.robot.localization[1], 
-                theta=self.robot.localization[2])
+            map = self.robot.getMap()
+            if (map == None):
+                print("[POINT] Error: Map not found")
+            else:
+                item = {"map": map,
+                        "name": target_name, 
+                        "x" : self.robot.localization[0], 
+                        "y" : self.robot.localization[1], 
+                        "theta" : self.robot.localization[2]}
+                with open("points.txt", "a+") as f:
+                    f.write(json.dumps(item) + "\n")
+            return redirect(url_for('pointsOfInterests'))
+        # @app.route('/add', methods=['POST'])
+        # def add():
+        #     target_name = request.form.get('target_name')
+
+        #     self.robot.robot_localization()
+        #     item = Target(text=target_name, 
+        #         x=self.robot.localization[0], 
+        #         y=self.robot.localization[1], 
+        #         theta=self.robot.localization[2])
             
-            db.session.add(item)
-            db.session.commit()
-            return redirect(url_for('pointsOfInterest'))
+        #     db.session.add(item)
+        #     db.session.commit()
+        #     return redirect(url_for('pointsOfInterests'))
 
         @app.route('/delete/<int:id>')
         def delete(id):
